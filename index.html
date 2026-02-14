@@ -7,11 +7,9 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-
     <div id="login-screen" class="full-overlay">
         <div class="login-box">
             <h1>GOD SIMULATOR</h1>
-            <p>Identify yourself to begin creation.</p>
             <input type="text" id="god-input" placeholder="Who are you?">
             <button onclick="checkIdentity()">Enter Universe</button>
         </div>
@@ -19,17 +17,15 @@
 
     <div id="mission-box">
         <h4>MISSION</h4>
-        <p id="mission-text">Restore the Dead Earth</p>
-        <div class="progress-container">
-            <div id="progress-bar"></div>
-        </div>
-        <small id="progress-percent">0% Green</small>
+        <p id="mission-text">Restore the World</p>
+        <div class="progress-container"><div id="progress-bar"></div></div>
+        <span id="progress-percent">0%</span>
     </div>
 
     <div id="resource-bar">
         <span>Isotopes: <b id="isotope-count">0</b></span>
         <span>Day: <b id="day-count">1</b>/20</span>
-        <div class="save-controls">
+        <div>
             <button onclick="exportSave()">Export</button>
             <button onclick="importSave()">Import</button>
         </div>
@@ -46,14 +42,10 @@
             <div id="grid-9x9"></div>
             <button id="advance-btn" onclick="advanceDay()">Advance Day</button>
         </section>
-
         <section id="skill-screen" class="screen" style="display:none;">
-            <h2>Divine Skill Tree</h2>
             <div id="skills-container"></div>
         </section>
-
         <section id="addon-screen" class="screen" style="display:none;">
-            <h2>Automation Add-ons</h2>
             <div id="addons-list"></div>
         </section>
     </main>
@@ -62,4 +54,4 @@
     <script src="skills.js"></script>
     <script src="save.js"></script>
 </body>
-        </html>
+    </html>
