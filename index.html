@@ -3,10 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator: Decide the Future</title>
+    <title>God Simulator Online</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
+    <div id="login-screen" class="full-overlay">
+        <div class="login-box">
+            <h1>GOD SIMULATOR</h1>
+            <p>Identify yourself to begin creation.</p>
+            <input type="text" id="god-input" placeholder="Who are you?">
+            <button onclick="checkIdentity()">Enter Universe</button>
+        </div>
+    </div>
+
+    <div id="mission-box">
+        <h4>MISSION</h4>
+        <p id="mission-text">Restore the Dead Earth</p>
+        <div class="progress-container">
+            <div id="progress-bar"></div>
+        </div>
+        <small id="progress-percent">0% Green</small>
+    </div>
 
     <div id="resource-bar">
         <span>Isotopes: <b id="isotope-count">0</b></span>
@@ -21,32 +39,22 @@
         <button onclick="showScreen('play-screen')">Play</button>
         <button onclick="showScreen('skill-screen')">Skill Tree</button>
         <button onclick="showScreen('addon-screen')">Add-ons</button>
-        <button onclick="showScreen('achieve-screen')">Achievements</button>
     </nav>
-
-    <hr>
 
     <main>
         <section id="play-screen" class="screen">
-            <h2>Planetary Surface</h2>
             <div id="grid-9x9"></div>
-            <button id="next-day-btn" onclick="advanceDay()">Advance Day</button>
+            <button id="advance-btn" onclick="advanceDay()">Advance Day</button>
         </section>
 
         <section id="skill-screen" class="screen" style="display:none;">
-            <h2>Divine Skills (Level 1-5)</h2>
-            <div id="skills-container">
-                </div>
+            <h2>Divine Skill Tree</h2>
+            <div id="skills-container"></div>
         </section>
 
         <section id="addon-screen" class="screen" style="display:none;">
-            <h2>Automation & Add-ons</h2>
+            <h2>Automation Add-ons</h2>
             <div id="addons-list"></div>
-        </section>
-
-        <section id="achieve-screen" class="screen" style="display:none;">
-            <h2>Divine Milestones</h2>
-            <div id="achievements-list"></div>
         </section>
     </main>
 
@@ -54,4 +62,4 @@
     <script src="skills.js"></script>
     <script src="save.js"></script>
 </body>
-</html>
+        </html>
