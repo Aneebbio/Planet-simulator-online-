@@ -1,37 +1,28 @@
 var isotopes = 0;
 var currentDay = 1;
+var autoInterval = null;
 
 function checkIdentity() {
-    const val = document.getElementById('god-input').value.toLowerCase();
-    if (val === "god") {
+    if (document.getElementById('god-input').value.toLowerCase() === "god") {
         document.getElementById('login-screen').style.display = 'none';
+        startAutomation();
         updateUI();
-    } else {
-        alert("Identify yourself as 'god' to proceed.");
     }
 }
 
-function createGrid() {
-    const grid = document.getElementById('grid-9x9');
-    grid.innerHTML = '';
-    for (let i = 0; i < 81; i++) {
-        const d = document.createElement('div');
-        d.className = 'tile';
-        grid.appendChild(d);
-    }
+function startAutomation() {
+    if (autoInterval) clearInterval(autoInterval);
+    autoInterval = setInterval(() => {
+        for (let i = 0; i < addonsOwned; i++) { advanceDay(); }
+    }, 1000);
 }
 
 function advanceDay() {
     if (currentDay < 20) {
         currentDay++;
     } else {
-        // Calculate Reward
-        let skillPoints = skillsData.reduce((a, b) => a + b.level, 0);
-        let bonus = (addonsOwned * 50) + (skillPoints * 10);
-        let total = 20 + bonus;
-        
-        isotopes += total;
-        alert("Run Finished! Reward: " + total + " Isotopes");
+        let skillBonus = skillsData.reduce((a, b) => a + b.level, 0) * 15;
+        isotopes += (20 + skillBonus);
         currentDay = 1;
         updateWorldVisuals();
     }
@@ -40,17 +31,17 @@ function advanceDay() {
 
 function updateWorldVisuals() {
     const tiles = document.querySelectorAll('.tile');
-    let totalLevel = skillsData.reduce((a, b) => a + b.level, 0);
-    let greenCount = Math.min(totalLevel * 5, 81); // 5 tiles per skill level
-    
+    const levels = skillsData.map(s => s.level);
     tiles.forEach((t, i) => {
-        if (i < greenCount) t.className = 'tile green-world';
+        t.className = 'tile';
+        if (i < levels[3] * 16) t.classList.add('stage-flowers');
+        else if (i < (levels[2] * 16)) t.classList.add('stage-ocean');
+        else if (i < (levels[1] * 16)) t.classList.add('stage-red');
+        else if (i < (levels[0] * 16)) t.classList.add('stage-rock');
     });
-
-    // Update Mission Box
-    let percent = Math.floor((greenCount / 81) * 100);
-    document.getElementById('progress-bar').style.width = percent + "%";
-    document.getElementById('progress-percent').innerText = percent + "% Green";
+    let progress = Math.min(100, Math.floor((levels.reduce((a,b)=>a+b,0)/20)*100));
+    document.getElementById('progress-bar').style.width = progress + "%";
+    document.getElementById('progress-percent').innerText = progress + "%";
 }
 
 function updateUI() {
@@ -64,4 +55,7 @@ function showScreen(id) {
     document.getElementById(id).style.display = 'block';
 }
 
-window.onload = () => { createGrid(); };
+window.onload = () => {
+    const grid = document.getElementById('grid-9x9');
+    for (let i = 0; i < 81; i++) grid.innerHTML += '<div class="tile"></div>';
+};
