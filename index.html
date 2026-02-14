@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>God Simulator: Decide the Future</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="resource-bar">
+        <span>Isotopes: <b id="isotope-count">0</b></span>
+        <span>Day: <b id="day-count">1</b>/20</span>
+        <div class="save-controls">
+            <button onclick="exportSave()">Export</button>
+            <button onclick="importSave()">Import</button>
+        </div>
+    </div>
+
+    <nav id="main-nav">
+        <button onclick="showScreen('play-screen')">Play</button>
+        <button onclick="showScreen('skill-screen')">Skill Tree</button>
+        <button onclick="showScreen('addon-screen')">Add-ons</button>
+        <button onclick="showScreen('achieve-screen')">Achievements</button>
+    </nav>
+
+    <hr>
+
+    <main>
+        <section id="play-screen" class="screen">
+            <h2>Planetary Surface</h2>
+            <div id="grid-9x9"></div>
+            <button id="next-day-btn" onclick="advanceDay()">Advance Day</button>
+        </section>
+
+        <section id="skill-screen" class="screen" style="display:none;">
+            <h2>Divine Skills (Level 1-5)</h2>
+            <div id="skills-container">
+                </div>
+        </section>
+
+        <section id="addon-screen" class="screen" style="display:none;">
+            <h2>Automation & Add-ons</h2>
+            <div id="addons-list"></div>
+        </section>
+
+        <section id="achieve-screen" class="screen" style="display:none;">
+            <h2>Divine Milestones</h2>
+            <div id="achievements-list"></div>
+        </section>
+    </main>
+
+    <script src="game.js"></script>
+    <script src="skills.js"></script>
+    <script src="save.js"></script>
+</body>
+</html>
