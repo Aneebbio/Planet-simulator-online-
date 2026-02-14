@@ -1,27 +1,16 @@
 function exportSave() {
-    let saveObj = {
-        iso: isotopes,
-        day: currentDay,
-        skills: skillsData.map(s => s.level),
-        addons: addonsOwned
-    };
-    let code = btoa(JSON.stringify(saveObj));
-    prompt("YOUR DIVINE SAVE CODE:", code);
+    let d = { iso: isotopes, liso: lifetimeIsotopes, time: totalSeconds, asc: ascensions, day: currentDay, sk: skillsData.map(s => s.level), add: addonsOwned, pwr: celestialPower };
+    prompt("Save Code:", btoa(JSON.stringify(d)));
 }
 
 function importSave() {
-    let code = prompt("PASTE SAVE CODE:");
+    let code = prompt("Paste Save Code:");
     if (!code) return;
     try {
-        let data = JSON.parse(atob(code));
-        isotopes = data.iso;
-        currentDay = data.day;
-        addonsOwned = data.addons;
-        data.skills.forEach((lv, i) => { if(skillsData[i]) skillsData[i].level = lv; });
-        updateWorldVisuals();
-        updateUI();
-        alert("Universe Restored.");
-    } catch(e) {
-        alert("Invalid code.");
-    }
+        let d = JSON.parse(atob(code));
+        isotopes = d.iso; lifetimeIsotopes = d.liso || 0; totalSeconds = d.time || 0; ascensions = d.asc || 0;
+        currentDay = d.day; addonsOwned = d.add; celestialPower = d.pwr || 1.0;
+        d.sk.forEach((lv, i) => { if(skillsData[i]) skillsData[i].level = lv; });
+        updateWorldVisuals(); updateUI();
+    } catch(e) { alert("Invalid Save"); }
 }
