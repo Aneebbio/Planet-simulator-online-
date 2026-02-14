@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator Online</title>
+    <title>God Simulator: Ascension</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,10 +16,10 @@
     </div>
 
     <div id="mission-box">
-        <h4>MISSION</h4>
-        <p id="mission-text">Restore the World</p>
+        <h4>DIVINE MISSION</h4>
         <div class="progress-container"><div id="progress-bar"></div></div>
         <span id="progress-percent">0%</span>
+        <p id="ascension-multiplier" style="color:gold; font-size:0.8rem; margin-top:5px;">Power: 1.0x</p>
     </div>
 
     <div id="resource-bar">
@@ -33,20 +33,34 @@
 
     <nav id="main-nav">
         <button onclick="showScreen('play-screen')">Play</button>
-        <button onclick="showScreen('skill-screen')">Skill Tree</button>
+        <button onclick="showScreen('skill-screen')">Skills</button>
         <button onclick="showScreen('addon-screen')">Add-ons</button>
+        <button onclick="showScreen('stats-screen')">Stats</button>
     </nav>
 
     <main>
         <section id="play-screen" class="screen">
             <div id="grid-9x9"></div>
             <button id="advance-btn" onclick="advanceDay()">Advance Day</button>
+            <br>
+            <button id="prestige-btn" style="display:none; background:gold; color:black; margin-top:20px;" onclick="ascend()">ASCEND UNIVERSE</button>
         </section>
+        
         <section id="skill-screen" class="screen" style="display:none;">
             <div id="skills-container"></div>
         </section>
+
         <section id="addon-screen" class="screen" style="display:none;">
             <div id="addons-list"></div>
+        </section>
+
+        <section id="stats-screen" class="screen" style="display:none;">
+            <h2>Universe Statistics</h2>
+            <div class="upgrade-card" style="width: 80%; text-align: left;">
+                <p>Total Time Played: <b id="stat-time">0s</b></p>
+                <p>Lifetime Isotopes: <b id="stat-lifetime">0</b></p>
+                <p>Total Ascensions: <b id="stat-ascends">0</b></p>
+            </div>
         </section>
     </main>
 
@@ -54,4 +68,4 @@
     <script src="skills.js"></script>
     <script src="save.js"></script>
 </body>
-    </html>
+            </html>
