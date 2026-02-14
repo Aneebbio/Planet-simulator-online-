@@ -1,23 +1,19 @@
-body { background: #0a0a0f; color: white; font-family: sans-serif; margin: 0; }
-#mission-box { position: fixed; top: 80px; right: 20px; width: 180px; background: rgba(0,0,0,0.8); border: 1px solid #00f2ff; padding: 10px; border-radius: 5px; z-index: 100; }
-.progress-container { width: 100%; background: #333; height: 8px; }
-#progress-bar { width: 0%; background: #00f2ff; height: 100%; transition: 0.3s; }
+body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; }
+#mission-box { position: fixed; top: 80px; right: 20px; width: 180px; background: rgba(0,0,0,0.8); border: 1px solid #ed1e79; padding: 12px; border-radius: 8px; z-index: 100; box-shadow: 0 0 10px #ed1e79; }
+.progress-container { width: 100%; background: #222; height: 10px; border-radius: 5px; overflow: hidden; }
+#progress-bar { width: 0%; background: #ed1e79; height: 100%; transition: 0.5s; }
 
-/* 9x9 Grid */
-#grid-9x9 { display: grid; grid-template-columns: repeat(9, 35px); gap: 2px; justify-content: center; margin: 20px auto; }
-.tile { width: 35px; height: 35px; background: #4d3319; transition: 0.5s; }
+#grid-9x9 { display: grid; grid-template-columns: repeat(9, 35px); gap: 2px; justify-content: center; margin: 30px auto; background: #111; padding: 5px; border-radius: 5px; }
+.tile { width: 35px; height: 35px; background: #3d2b1f; border-radius: 2px; transition: 0.3s; }
 
-/* Visual Stages */
-.stage-rock { background: #7f8c8d !important; }
-.stage-red { background: #c0392b !important; }
-.stage-ocean { background: #2980b9 !important; }
-.stage-white { background: #ecf0f1 !important; }
-.stage-flowers { background: #27ae60 !important; background-image: radial-gradient(#ff69b4 15%, transparent 15%) !important; background-size: 8px 8px !important; }
+/* States */
+.stage-rock { background: #636e72 !important; }
+.stage-red { background: #d63031 !important; }
+.stage-ocean { background: #0984e3 !important; }
+.stage-flowers { background: #00b894 !important; background-image: radial-gradient(#fd79a8 20%, transparent 20%) !important; background-size: 8px 8px !important; }
 
-/* UI */
+#resource-bar { background: #1a1a2e; padding: 15px; display: flex; justify-content: space-around; border-bottom: 2px solid #ed1e79; }
+.upgrade-card { background: #161b33; padding: 15px; margin: 10px; border: 1px solid #444; display: inline-block; width: 200px; border-radius: 8px; vertical-align: top; }
+button { cursor: pointer; padding: 10px 15px; background: #ed1e79; color: white; border: none; border-radius: 4px; font-weight: bold; }
+button:disabled { background: #333; color: #777; }
 .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 1000; }
-#resource-bar { background: #161b33; padding: 15px; display: flex; justify-content: space-around; }
-.screen { padding: 20px; }
-.upgrade-card { background: #1c1c2e; padding: 15px; margin: 10px; border: 1px solid #444; display: inline-block; width: 180px; }
-button { cursor: pointer; padding: 10px; background: #ed1e79; color: white; border: none; border-radius: 4px; }
-button:disabled { background: #444; }
