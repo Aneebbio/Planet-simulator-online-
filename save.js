@@ -1,24 +1,56 @@
-function processExport() {
+// AUTO-SAVE SYSTEM
+function saveGame() {
     let d = { 
         n: playerName, i: isotopes, li: lifetimeIsotopes, p: celestialPower, day: currentDay, add: addonsOwned,
         sk: skillsData.map(s => s.level), gen: generators.map(g => g.count),
         lc: lastClaim, cd: celestialDrives, mb: moonBases, wr: worldsRestored 
     };
-    window.prompt("COPY THIS SAVE CODE:", btoa(JSON.stringify(d)));
+    localStorage.setItem('godSimSaveV2', JSON.stringify(d));
+    
+    // Visual Feedback
+    let s = document.getElementById('save-status');
+    if(s) {
+        s.innerText = "Saving...";
+        setTimeout(() => s.innerText = "Saved", 1000);
+    }
 }
 
-function processImport() {
-    let input = window.prompt("PASTE YOUR SAVE CODE:");
-    if (!input) return;
+function loadGame() {
+    let raw = localStorage.getItem('godSimSaveV2');
+    if (!raw) return false;
+    
     try {
-        let d = JSON.parse(atob(input));
-        playerName=d.n; isotopes=d.i; lifetimeIsotopes=d.li; celestialPower=d.p; currentDay=d.day; 
-        addonsOwned=d.add; lastClaim=d.lc; celestialDrives=d.cd; moonBases=d.mb; worldsRestored=d.wr;
-        d.sk.forEach((l, i) => { if(skillsData[i]) skillsData[i].level = l; });
-        d.gen.forEach((c, i) => { if(generators[i]) generators[i].count = c; });
-        document.getElementById('stat-name').innerText = playerName;
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('galaxy-screen').style.display = 'none';
-        startLoops(); updateWorldVisuals(); updateUI();
-    } catch(e) { alert("Invalid Code!"); }
+        let d = JSON.parse(raw);
+        // Load Variables
+        if(d.n) playerName=d.n; 
+        if(d.i) isotopes=d.i; 
+        if(d.li) lifetimeIsotopes=d.li; 
+        if(d.p) celestialPower=d.p; 
+        if(d.day) currentDay=d.day; 
+        if(d.add) addonsOwned=d.add; 
+        if(d.lc) lastClaim=d.lc; 
+        if(d.cd) celestialDrives=d.cd; 
+        if(d.mb) moonBases=d.mb; 
+        if(d.wr) worldsRestored=d.wr;
+        
+        // Load Arrays
+        if(d.sk) d.sk.forEach((l, i) => { if(skillsData[i]) skillsData[i].level = l; });
+        if(d.gen) d.gen.forEach((c, i) => { if(generators[i]) generators[i].count = c; });
+        return true;
+    } catch(e) { 
+        console.error("Save Corrupt");
+        return false;
+    }
 }
+
+function manualSave() {
+    saveGame();
+    alert("Game Saved!");
+}
+
+function hardReset() {
+    if(confirm("ARE YOU SURE? This will wipe your save file forever.")) {
+        localStorage.removeItem('godSimSaveV2');
+        location.reload();
+    }
+            }
