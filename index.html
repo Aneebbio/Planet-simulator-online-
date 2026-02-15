@@ -23,10 +23,15 @@
 
     <div id="save-menu" class="overlay-menu" style="display:none;">
         <h3>Universe Data</h3>
-        <textarea id="save-box"></textarea>
-        <div style="display:flex; justify-content:space-between; margin-top:10px;">
-            <button onclick="processExport()">Export</button>
-            <button onclick="processImport()">Import</button>
+        <p style="font-size: 10px; color: #aaa;">Click "Export" then "Copy" to save your code.</p>
+        <textarea id="save-box" readonly></textarea>
+        <div style="display:flex; flex-direction: column; gap: 5px;">
+            <button onclick="processExport()">1. Export Code</button>
+            <button onclick="copySaveCode()" style="background: #2ecc71;">2. Copy to Clipboard</button>
+            <hr>
+            <p style="font-size: 10px; color: #aaa;">Paste code below then click Import:</p>
+            <textarea id="import-box" placeholder="Paste code here..."></textarea>
+            <button onclick="processImport()" style="background: #00f2ff; color: black;">3. Import Paste</button>
             <button onclick="toggleSaveMenu()" style="background:#444;">Close</button>
         </div>
     </div>
@@ -39,6 +44,7 @@
                 <span id="power-val">0/0 Pwr</span>
             </div>
             <div class="p-bar-bg"><div id="power-fill"></div></div>
+            <button id="battery-btn" onclick="useBattery()" class="battery-ready">🔋 BATTERY: READY</button>
         </div>
         <p id="news-ticker">Initializing...</p>
         <div class="progress-container"><div id="progress-bar"></div></div>
@@ -46,14 +52,14 @@
     </div>
 
     <div id="resource-bar">
-        <span>Isotopes: <b id="isotope-count">0</b></span>
+        <span>Iso: <b id="isotope-count">0</b></span>
         <span>Day: <b id="day-count">1</b>/20</span>
-        <button onclick="toggleSaveMenu()" style="padding:4px 8px; font-size:0.7rem;">Save/Load</button>
+        <button onclick="toggleSaveMenu()" style="padding:4px 8px; font-size:0.7rem;">Menu</button>
     </div>
 
     <nav id="main-nav">
         <button onclick="showScreen('play-screen')">World</button>
-        <button onclick="showScreen('skill-screen')">Restoration</button>
+        <button onclick="showScreen('skill-screen')">Skills</button>
         <button onclick="showScreen('addon-screen')">Energy</button>
         <button onclick="showScreen('stats-screen')">Stats</button>
     </nav>
@@ -61,33 +67,24 @@
     <main>
         <section id="play-screen" class="screen">
             <div id="grid-9x9"></div>
-            <button id="advance-btn" onclick="advanceDay()">Advance Day</button>
+            <button id="advance-btn" onclick="advanceDay(false)">Advance Day</button>
             <br>
             <button id="prestige-btn" style="display:none; background:gold; color:black; margin-top:20px;" onclick="ascend()">ASCEND UNIVERSE</button>
         </section>
-
-        <section id="skill-screen" class="screen" style="display:none;">
-            <div id="skills-container"></div>
-        </section>
-
-        <section id="addon-screen" class="screen" style="display:none;">
-            <div id="generators-container"></div>
-            <div id="addons-list"></div>
-        </section>
-
+        <section id="skill-screen" class="screen" style="display:none;"><div id="skills-container"></div></section>
+        <section id="addon-screen" class="screen" style="display:none;"><div id="generators-container"></div><div id="addons-list"></div></section>
         <section id="stats-screen" class="screen" style="display:none;">
-            <h2>Universe Statistics</h2>
+            <h2>Statistics</h2>
             <div class="upgrade-card" style="width:85%;">
                 <p>Creator: <b id="stat-name">---</b></p>
-                <p>Lifetime Isotopes: <b id="stat-lifetime">0</b></p>
-                <p>Power Multiplier: <b id="stat-pwr">1.0x</b></p>
+                <p>Lifetime Iso: <b id="stat-lifetime">0</b></p>
+                <p>Power: <b id="stat-pwr">1.0x</b></p>
             </div>
             <h3>🏆 Leaderboard</h3>
             <table id="leaderboard-table"><tbody id="leaderboard-body"></tbody></table>
         </section>
     </main>
 
-    <script src="planet.js"></script>
     <script src="game.js"></script>
     <script src="skills.js"></script>
     <script src="save.js"></script>
