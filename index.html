@@ -3,55 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator 7.0: Cosmic Lawgiver</title>
+    <title>God Simulator 8.0: Multiverse</title>
     <style>
         body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
         #resource-bar { background: #1a1a2e; padding: 15px; display: flex; justify-content: space-around; border-bottom: 2px solid #ed1e79; position: sticky; top: 0; z-index: 1000; }
         #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
-        #grid-container { position: relative; width: fit-content; margin: 20px auto; }
-        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 30px); gap: 2px; border: 2px solid #333; padding: 5px; background: #000; }
-        .tile { width: 30px; height: 30px; background: #1a1a1a; border-radius: 2px; transition: 0.8s; }
         
-        /* TILE STAGES */
+        /* PLANET GRID STYLING */
+        #grid-container { position: relative; width: fit-content; margin: 20px auto; padding: 10px; border-radius: 10px; transition: 0.5s; }
+        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 30px); gap: 2px; border: 2px solid #333; padding: 5px; background: #000; }
+        .tile { width: 30px; height: 30px; background: #1a1a1a; border-radius: 2px; transition: 0.5s; }
+        
+        /* PLANET THEMES */
+        .theme-earth { background: radial-gradient(circle, #1a1a2e, #050508); }
+        .theme-mars { background: radial-gradient(circle, #2e1a1a, #080505); filter: sepia(0.5) saturate(2); }
+        .theme-crystal { background: radial-gradient(circle, #2e1a2e, #080508); filter: hue-rotate(45deg) brightness(1.2); }
+
+        /* TILES */
         .stage-rock { background: #636e72 !important; } .stage-red { background: #c0392b !important; } 
         .stage-ocean { background: #0984e3 !important; } .stage-flowers { background: #00b894 !important; }
         .stage-city { background: #f1c40f !important; box-shadow: 0 0 8px gold; }
 
-        /* DEBUG MENU */
-        #debug-menu { position: fixed; right: 10px; top: 120px; width: 140px; background: rgba(0,0,0,0.95); border: 1px solid lime; padding: 10px; display: none; z-index: 9999; box-shadow: 0 0 15px lime; font-family: monospace; font-size: 10px; text-align: left; }
-        .debug-btn { background: #111; color: lime; border: 1px solid lime; width: 100%; margin: 3px 0; cursor: pointer; padding: 5px; }
+        .planet-btn { background: #333; margin: 5px; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; }
+        .active-planet { border: 2px solid #ed1e79; background: #111; }
 
-        /* CARDS */
         .upgrade-card { background: #161b33; padding: 12px; margin: 10px auto; border: 1px solid #444; border-radius: 8px; width: 85%; max-width: 400px; }
-        .law-card { border: 1px solid gold; background: linear-gradient(135deg, #1a1a00, #000); }
-        .ach-row { display: flex; align-items: center; background: #111; margin: 5px auto; padding: 10px; border-radius: 5px; width: 90%; border: 1px solid #333; }
-        .unlocked { border-color: gold; color: gold; }
-
-        /* BOSS */
-        #boss { position: absolute; width: 100px; height: 100px; background: radial-gradient(circle, #ff0000, #000); border-radius: 50%; top: -150px; left: 50%; transform: translateX(-50%); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; border: 2px solid white; box-shadow: 0 0 20px red; }
-        #boss-hp { width: 80%; height: 6px; background: #333; border: 1px solid white; }
+        #boss { position: absolute; width: 100px; height: 100px; background: radial-gradient(circle, #ff0000, #000); border-radius: 50%; top: -150px; left: 50%; transform: translateX(-50%); z-index: 100; display: none; border: 2px solid white; }
         
         button { cursor: pointer; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; color: white; background: #ed1e79; }
-        button:disabled { background: #444; cursor: not-allowed; }
+        button:disabled { background: #444 !important; opacity: 0.5; }
         .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 4000; flex-direction: column; }
     </style>
 </head>
-<body onload="checkSave()">
+<body>
 
     <div id="login-screen" class="full-overlay">
         <div style="border: 2px solid #ed1e79; padding: 30px; border-radius: 15px; background: #111;">
-            <h1>GOD SIMULATOR 7.0</h1>
-            <input type="text" id="god-name" placeholder="Divine Name..." style="padding:10px;">
+            <h1>GOD SIMULATOR 8.0</h1>
+            <input type="text" id="god-name" placeholder="Divine Name...">
             <br><br><button onclick="login()">AWAKEN</button>
         </div>
-    </div>
-
-    <div id="debug-menu">
-        <div style="color: lime; font-weight: bold;">🔧 INFINITY</div>
-        <button class="debug-btn" onclick="isotopes += 10000000; updateUI();">+10M Iso</button>
-        <button class="debug-btn" onclick="faith += 1000; updateUI();">+1k Faith</button>
-        <button class="debug-btn" onclick="spawnBoss()">Spawn Boss</button>
-        <button class="debug-btn" onclick="localStorage.clear(); location.reload();" style="color:red;">WIPE ALL</button>
     </div>
 
     <div id="resource-bar">
@@ -60,111 +51,160 @@
     </div>
 
     <nav id="main-nav">
-        <button onclick="showScreen('play-screen')">World</button>
+        <button onclick="showScreen('play-screen')">Universe</button>
         <button onclick="showScreen('skill-screen')">Skills</button>
-        <button onclick="showScreen('faith-screen')" style="color:#00f2ff;">Ascension</button>
-        <button onclick="showScreen('law-screen')" id="law-nav" style="display:none; color:gold;">Laws</button>
-        <button onclick="showScreen('stat-screen')">Records</button>
+        <button onclick="showScreen('faith-screen')" style="color:#00f2ff;">Altar</button>
+        <button onclick="showScreen('law-nav')" id="law-nav-btn" style="display:none; color:gold;">Laws</button>
+        <button onclick="showScreen('stat-screen')">Stats</button>
     </nav>
 
     <main>
         <section id="play-screen" class="screen">
-            <div id="god-rank" style="color:#ed1e79; font-weight:bold; margin-top:10px;">Celestial Spark</div>
-            <div id="grid-container">
-                <div id="boss" onclick="attackBoss()">
-                    <div id="boss-hp"><div id="hp-fill" style="width:100%; height:100%; background: lime;"></div></div>
-                </div>
+            <div id="god-rank" style="color:#ed1e79; font-weight:bold; margin-top:10px;">CELESTIAL SPARK</div>
+            
+            <div id="planet-selector">
+                <button class="planet-btn active-planet" id="p0" onclick="switchPlanet(0)">Earth</button>
+                <button class="planet-btn" id="p1" onclick="switchPlanet(1)">Mars</button>
+                <button class="planet-btn" id="p2" onclick="switchPlanet(2)">Crystalis</button>
+            </div>
+
+            <div id="grid-container" class="theme-earth">
+                <div id="boss" onclick="attackBoss()"><div style="width:80%; height:5px; background:#333; margin:10px auto;"><div id="hp-fill" style="width:100%; height:100%; background:lime;"></div></div></div>
                 <div id="grid-9x9"></div>
             </div>
+            
             <button onclick="advanceDay()" style="padding: 15px 40px;">Advance Day</button>
             <p id="day-text">Day 1 / 20</p>
         </section>
 
         <section id="skill-screen" class="screen" style="display:none;"><div id="skills-container"></div></section>
-
-        <section id="faith-screen" class="screen" style="display:none;">
-            <h2 style="color:#00f2ff;">Divine Altar</h2>
-            <div class="upgrade-card" style="border: 2px solid #00f2ff;">
-                <p>Harvestable: <b id="pending-faith">0</b> Faith</p>
-                <button onclick="rebirth()" style="background:#00f2ff; color:#000;">REBIRTH</button>
-            </div>
-            <div id="faith-shop"></div>
-        </section>
-
-        <section id="law-screen" class="screen" style="display:none;">
-            <h2 style="color:gold;">Universal Laws</h2>
-            <p>Sacrifice 50 Faith to enact a permanent Law.</p>
-            <div id="laws-container"></div>
-        </section>
-
-        <section id="stat-screen" class="screen" style="display:none;">
-            <h2>Hall of Records</h2>
-            <div class="upgrade-card">Clicks: <b id="stat-clicks">0</b> | Kills: <b id="stat-kills">0</b></div>
-            <h3>Achievements</h3>
-            <div id="ach-list"></div>
-        </section>
+        <section id="faith-screen" class="screen" style="display:none;"><div id="faith-shop"></div></section>
+        <section id="law-nav" class="screen" style="display:none;"><div id="laws-container"></div></section>
+        <section id="stat-screen" class="screen" style="display:none;"><h2>Records</h2><div id="ach-list"></div></section>
     </main>
 
     <script>
-        let skills = [
-            { id: 0, name: "Tectonics", level: 0, base: 50, req: -1 },
-            { id: 1, name: "Atmosphere", level: 0, base: 250, req: 0 },
-            { id: 2, name: "Ozone", level: 0, base: 1000, req: 1 },
-            { id: 3, name: "Hydration", level: 0, base: 4000, req: 2 },
-            { id: 4, name: "Biosphere", level: 0, base: 15000, req: 3 },
-            { id: 5, name: "Flora", level: 0, base: 60000, req: 4 },
-            { id: 6, name: "Civilization", level: 0, base: 250000, req: 5 },
-            { id: 7, name: "MegaCities", level: 0, base: 1000000, req: 6 }
-        ];
-
-        let fUpgrades = [
-            { id: 0, name: "Holy Magnet", desc: "2x Isotope Yield", cost: 5, owned: false },
-            { id: 1, name: "Auto-Genesis", desc: "Passage of Time (3s)", cost: 10, owned: false }
-        ];
-
-        let universalLaws = [
-            { id: 0, name: "Law of Chronos", desc: "Auto-Genesis is 2x faster", cost: 50, active: false },
-            { id: 1, name: "Law of Aegis", desc: "Star Eater moves 50% slower", cost: 50, active: false }
-        ];
-
-        let achs = [
-            { id: 0, name: "The Spark", goal: 100, type: "clk", unlocked: false },
-            { id: 1, name: "Titan", goal: 1000000, type: "iso", unlocked: false },
-            { id: 2, name: "Slayer", goal: 1, type: "kil", unlocked: false }
-        ];
-
-        let isotopes = 0, faith = 0, currentDay = 1, clicks = 0, kills = 0;
+        let isotopes = 0, faith = 0, currentDay = 1, clicks = 0, kills = 0, activePlanet = 0;
+        let planetLevels = [[0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]]; // Skills per planet
         let bossActive = false, bossHP = 100;
 
-        function login() {
-            let name = document.getElementById('god-name').value;
-            if(name.toLowerCase() === "infinity") document.getElementById('debug-menu').style.display = 'block';
-            document.getElementById('login-screen').style.display = 'none';
-            createGrid(); updateUI();
-            setInterval(saveGame, 5000);
-            startAutoDay();
-        }
+        let skillsData = [
+            { id: 0, name: "Tectonics", base: 50 }, { id: 1, name: "Atmosphere", base: 250 },
+            { id: 2, name: "Ozone", base: 1000 }, { id: 3, name: "Hydration", base: 4000 },
+            { id: 4, name: "Biosphere", base: 15000 }, { id: 5, name: "Flora", base: 60000 },
+            { id: 6, name: "Civilization", base: 250000 }, { id: 7, name: "MegaCities", base: 1000000 }
+        ];
 
-        function startAutoDay() {
-            setInterval(() => {
-                if(fUpgrades[1].owned) {
-                    let speed = universalLaws[0].active ? 1500 : 3000;
-                    advanceDay(true);
-                }
-            }, 3000); 
-        }
+        let fUpgrades = [{ name: "Holy Magnet", cost: 5, owned: false }, { name: "Auto-Genesis", cost: 10, owned: false }];
+        let laws = [{ name: "Law of Chronos", cost: 50, active: false }, { name: "Law of Aegis", cost: 50, active: false }];
+        let achs = [{ name: "Clicker", goal: 100, type: "clk", unlocked: false }, { name: "Rich", goal: 1000000, type: "iso", unlocked: false }];
+
+        function login() { document.getElementById('login-screen').style.display = 'none'; checkSave(); createGrid(); startAutoDay(); updateUI(); setInterval(saveGame, 5000); }
 
         function createGrid() {
             const grid = document.getElementById('grid-9x9'); grid.innerHTML = "";
-            for (let i = 0; i < 81; i++) grid.innerHTML += '<div class="tile" id="tile-'+i+'"></div>';
+            for (let i = 0; i < 81; i++) { let d = document.createElement('div'); d.className = 'tile'; d.id = 'tile-'+i; grid.appendChild(d); }
             updateWorldVisuals();
+        }
+
+        function switchPlanet(id) {
+            activePlanet = id;
+            const container = document.getElementById('grid-container');
+            container.className = id === 0 ? 'theme-earth' : id === 1 ? 'theme-mars' : 'theme-crystal';
+            document.querySelectorAll('.planet-btn').forEach((b, i) => b.className = i === id ? 'planet-btn active-planet' : 'planet-btn');
+            updateWorldVisuals(); updateUI();
         }
 
         function advanceDay(isAuto = false) {
             if(!isAuto) clicks++;
-            checkAchs();
-            if (currentDay < 20) currentDay++; 
+            if (currentDay < 20) currentDay++;
             else {
                 currentDay = 1;
                 let mult = fUpgrades[0].owned ? 2 : 1;
-                isotopes +=
+                let totalSkills = planetLevels[activePlanet].reduce((a,b)=>a+b, 0);
+                isotopes += (100 + (totalSkills * 50)) * mult;
+                if(planetLevels[activePlanet][7] > 0 && !bossActive && Math.random() < 0.3) spawnBoss();
+            }
+            checkAchs(); updateUI();
+        }
+
+        function buySkill(id) {
+            let lvl = planetLevels[activePlanet][id];
+            let cost = Math.floor(skillsData[id].base * Math.pow(2.2, lvl));
+            if(isotopes >= cost && lvl < 10) {
+                isotopes -= cost;
+                planetLevels[activePlanet][id]++;
+                updateWorldVisuals(); updateUI();
+            }
+        }
+
+        function startAutoDay() { setInterval(() => { if(fUpgrades[1].owned) advanceDay(true); }, laws[0].active ? 1500 : 3000); }
+
+        function updateUI() {
+            document.getElementById('isotope-count').innerText = Math.floor(isotopes).toLocaleString();
+            document.getElementById('faith-count').innerText = faith;
+            document.getElementById('day-text').innerText = "Day " + currentDay + " / 20";
+            
+            const sCon = document.getElementById('skills-container');
+            sCon.innerHTML = `<h2>Skills (${activePlanet === 0 ? 'Earth' : activePlanet === 1 ? 'Mars' : 'Crystalis'})</h2>`;
+            skillsData.forEach((s, i) => {
+                let lvl = planetLevels[activePlanet][i];
+                let cost = Math.floor(s.base * Math.pow(2.2, lvl));
+                let isMax = lvl >= 10;
+                let reqMet = i === 0 || planetLevels[activePlanet][i-1] > 0;
+                sCon.innerHTML += `<div class="upgrade-card" style="opacity:${reqMet?1:0.3}"><b>${reqMet?s.name:'???'}</b> (${lvl}/10)<br>
+                <button onclick="buySkill(${i})" ${(!reqMet||isotopes<cost||isMax)?'disabled':''}>${isMax?'MAXED':cost.toLocaleString()}</button></div>`;
+            });
+
+            const fCon = document.getElementById('faith-shop');
+            fCon.innerHTML = `<h2>Altar</h2><div class="upgrade-card"><p>Pending: ${Math.floor(Math.sqrt(isotopes/500))} Faith</p><button onclick="rebirth()">ASCEND</button></div>`;
+            fUpgrades.forEach((u, i) => { fCon.innerHTML += `<div class="upgrade-card"><b>${u.name}</b><br><button onclick="buyFaith(${i})" ${(faith<u.cost||u.owned)?'disabled':''}>${u.owned?'OWNED':u.cost+' FP'}</button></div>`; });
+
+            const lCon = document.getElementById('laws-container'); lCon.innerHTML = "<h2>Laws</h2>";
+            laws.forEach((l, i) => { lCon.innerHTML += `<div class="upgrade-card law-card"><b>${l.name}</b><br><button onclick="enactLaw(${i})" ${(faith<l.cost||l.active)?'disabled':''}>${l.active?'ENACTED':l.cost+' FP'}</button></div>`; });
+        }
+
+        function rebirth() {
+            let p = Math.floor(Math.sqrt(isotopes/500));
+            if(p >= 1 && confirm("Ascend? Resets skills and isotopes for permanent Faith.")) {
+                faith += p; isotopes = 0; planetLevels = [[0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]];
+                updateWorldVisuals(); updateUI();
+            }
+        }
+
+        function buyFaith(id) { if(faith >= fUpgrades[id].cost && !fUpgrades[id].owned) { faith -= fUpgrades[id].cost; fUpgrades[id].owned = true; updateUI(); } }
+        function enactLaw(id) { if(faith >= laws[id].cost && !laws[id].active) { faith -= laws[id].cost; laws[id].active = true; updateUI(); } }
+
+        function updateWorldVisuals() {
+            let lvls = planetLevels[activePlanet];
+            for(let i=0; i<81; i++) {
+                let t = document.getElementById('tile-'+i); if(!t) continue; t.className = 'tile';
+                if(i < lvls[7]*10) t.classList.add('stage-city');
+                else if(i < lvls[5]*12) t.classList.add('stage-flowers');
+                else if(i < lvls[3]*15) t.classList.add('stage-ocean');
+                else if(i < lvls[1]*15) t.classList.add('stage-red');
+                else if(i < lvls[0]*20) t.classList.add('stage-rock');
+            }
+        }
+
+        function checkAchs() {
+            let count = 0;
+            achs.forEach(a => { if(!a.unlocked) { if(a.type==="clk"&&clicks>=a.goal) a.unlocked=true; if(a.type==="iso"&&isotopes>=a.goal) a.unlocked=true; } if(a.unlocked) count++; });
+            let r = count >= 2 ? "UNIVERSAL OVERLORD" : count >= 1 ? "SOLAR WARDEN" : "CELESTIAL SPARK";
+            document.getElementById('god-rank').innerText = r;
+            if(count >= 2) document.getElementById('law-nav-btn').style.display = 'block';
+        }
+
+        function saveGame() { localStorage.setItem('godSim_v80', JSON.stringify({iso:isotopes, fth:faith, pL:planetLevels, fup:fUpgrades.map(u=>u.owned), law:laws.map(l=>l.active)})); }
+        function checkSave() { 
+            let s = localStorage.getItem('godSim_v80'); 
+            if(s) { 
+                let d = JSON.parse(s); isotopes = d.iso; faith = d.fth; planetLevels = d.pL; 
+                d.fup.forEach((o, i) => fUpgrades[i].owned = o); 
+                d.law.forEach((a, i) => laws[i].active = a); 
+            } 
+        }
+        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.style.display = 'none'); document.getElementById(id).style.display = 'block'; updateUI(); }
+    </script>
+</body>
+            </html>
