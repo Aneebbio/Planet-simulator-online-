@@ -7,28 +7,38 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+
     <div id="login-screen" class="full-overlay">
         <div class="login-box">
             <h1>GOD SIMULATOR</h1>
-            <input type="text" id="god-input" placeholder="Who are you?">
-            <button onclick="checkIdentity()">Enter Universe</button>
+            <p>Identify yourself, Creator.</p>
+            <input type="text" id="god-input" placeholder="Enter your Divine Name">
+            <button onclick="checkIdentity()">Begin Existence</button>
+        </div>
+    </div>
+
+    <div id="save-menu" class="overlay-menu" style="display:none;">
+        <h3>Universe Data</h3>
+        <textarea id="save-box" placeholder="Your code will appear here..."></textarea>
+        <div class="menu-buttons">
+            <button onclick="processExport()">Get Code</button>
+            <button onclick="processImport()">Load Code</button>
+            <button onclick="toggleSaveMenu()" style="background:#555;">Close</button>
         </div>
     </div>
 
     <div id="mission-box">
         <h4>DIVINE MISSION</h4>
+        <p id="news-ticker" style="color:#ff00ff; font-size:0.7rem; min-height:15px;">Initializing...</p>
         <div class="progress-container"><div id="progress-bar"></div></div>
-        <span id="progress-percent">0%</span>
-        <p id="ascension-multiplier" style="color:gold; font-size:0.8rem; margin-top:5px;">Power: 1.0x</p>
+        <span id="progress-percent">0% Restored</span>
+        <p id="ascension-text" style="color:gold; font-size:0.8rem; margin-top:5px;">Power: 1.0x</p>
     </div>
 
     <div id="resource-bar">
         <span>Isotopes: <b id="isotope-count">0</b></span>
         <span>Day: <b id="day-count">1</b>/20</span>
-        <div>
-            <button onclick="exportSave()">Export</button>
-            <button onclick="importSave()">Import</button>
-        </div>
+        <button onclick="toggleSaveMenu()" style="padding:5px 10px; font-size:0.8rem;">Save/Load</button>
     </div>
 
     <nav id="main-nav">
@@ -43,7 +53,7 @@
             <div id="grid-9x9"></div>
             <button id="advance-btn" onclick="advanceDay()">Advance Day</button>
             <br>
-            <button id="prestige-btn" style="display:none; background:gold; color:black; margin-top:20px;" onclick="ascend()">ASCEND UNIVERSE</button>
+            <button id="prestige-btn" style="display:none; background:gold; color:black; margin-top:20px; font-weight:bold;" onclick="ascend()">ASCEND UNIVERSE</button>
         </section>
         
         <section id="skill-screen" class="screen" style="display:none;">
@@ -56,11 +66,21 @@
 
         <section id="stats-screen" class="screen" style="display:none;">
             <h2>Universe Statistics</h2>
-            <div class="upgrade-card" style="width: 80%; text-align: left;">
-                <p>Total Time Played: <b id="stat-time">0s</b></p>
+            <div class="upgrade-card" style="width: 85%; text-align: left; margin: 0 auto;">
+                <p>Divine Name: <b id="stat-name">Unknown</b></p>
+                <p>Time Played: <b id="stat-time">0s</b></p>
                 <p>Lifetime Isotopes: <b id="stat-lifetime">0</b></p>
                 <p>Total Ascensions: <b id="stat-ascends">0</b></p>
             </div>
+
+            <h3>🏆 Galactic Leaderboard</h3>
+            <table id="leaderboard-table">
+                <thead>
+                    <tr style="color: gold;"><th>Rank</th><th>Name</th><th>Score</th></tr>
+                </thead>
+                <tbody id="leaderboard-body">
+                    </tbody>
+            </table>
         </section>
     </main>
 
@@ -68,4 +88,4 @@
     <script src="skills.js"></script>
     <script src="save.js"></script>
 </body>
-            </html>
+    </html>
