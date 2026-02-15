@@ -3,65 +3,87 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator 4.2: Faith Shop</title>
+    <title>God Simulator 6.2: Hall of Records</title>
     <style>
-        body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; transition: background 2s; }
-        #resource-bar { background: #1a1a2e; padding: 10px; display: flex; justify-content: space-around; border-bottom: 2px solid #ed1e79; position: sticky; top: 0; z-index: 1000; }
-        #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; flex-wrap: wrap; }
-        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 30px); gap: 2px; justify-content: center; margin: 20px auto; width: fit-content; border: 2px solid #333; padding: 5px; background: #111; }
+        body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
+        #resource-bar { background: #1a1a2e; padding: 15px; display: flex; justify-content: space-around; border-bottom: 2px solid #ed1e79; position: sticky; top: 0; z-index: 1000; }
+        #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
+        #grid-container { position: relative; width: fit-content; margin: 30px auto; }
+        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 30px); gap: 2px; border: 2px solid #333; padding: 5px; background: #000; }
         .tile { width: 30px; height: 30px; background: #1a1a1a; border-radius: 2px; transition: 0.5s; }
+        
+        /* ACHIEVEMENTS STYLE */
+        .achievement-row { display: flex; align-items: center; background: #111; margin: 5px auto; padding: 10px; border-radius: 5px; width: 90%; border: 1px solid #333; transition: 0.3s; }
+        .achievement-row.unlocked { border-color: gold; box-shadow: 0 0 10px rgba(255,215,0,0.3); }
+        .ach-icon { font-size: 24px; margin-right: 15px; filter: grayscale(100%); opacity: 0.3; }
+        .unlocked .ach-icon { filter: grayscale(0%); opacity: 1; }
+        .ach-info { text-align: left; }
+
+        /* DEBUG MENU */
+        #debug-menu { position: fixed; right: 10px; top: 150px; width: 150px; background: rgba(0,0,0,0.9); border: 1px solid lime; padding: 10px; display: none; z-index: 5000; box-shadow: 0 0 10px lime; font-family: monospace; font-size: 10px; }
+        .debug-btn { background: #222; color: lime; border: 1px solid lime; width: 100%; margin: 2px 0; cursor: pointer; }
+
+        #boss { position: absolute; width: 100px; height: 100px; background: radial-gradient(circle, #ff0000, #000); border-radius: 50%; top: -150px; left: 50%; transform: translateX(-50%); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; border: 2px solid white; }
+        #boss-hp { width: 80%; height: 6px; background: #333; border: 1px solid white; }
         .stage-rock { background: #636e72 !important; } .stage-red { background: #c0392b !important; } 
         .stage-ocean { background: #0984e3 !important; } .stage-flowers { background: #00b894 !important; } 
         .stage-city { background: #f1c40f !important; box-shadow: 0 0 5px gold; }
+        
         .upgrade-card { background: #161b33; padding: 10px; margin: 8px auto; border: 1px solid #444; border-radius: 8px; width: 85%; max-width: 400px; }
-        button { cursor: pointer; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; color: white; background: #ed1e79; margin: 2px; }
-        button:disabled { background: #333 !important; color: #666 !important; }
-        .faith-text { color: #00f2ff; text-shadow: 0 0 5px #00f2ff; }
-        .p-bar-bg { width: 250px; height: 10px; background: #000; border-radius: 5px; margin: 10px auto; overflow: hidden; }
-        #progress-bar { height: 100%; width: 0%; background: #00f2ff; transition: 0.5s; }
-        .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 3000; flex-direction: column; }
+        button { cursor: pointer; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; color: white; background: #ed1e79; }
+        .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 4000; flex-direction: column; }
     </style>
 </head>
 <body>
 
     <div id="login-screen" class="full-overlay">
         <div style="border: 2px solid #ed1e79; padding: 30px; border-radius: 15px; background: #111;">
-            <h1>GOD SIMULATOR 4.2</h1>
-            <button onclick="checkIdentity()">Begin Reign</button>
+            <h1>GOD SIMULATOR 6.2</h1>
+            <input type="text" id="god-name" placeholder="Divine Name...">
+            <button onclick="login()">Enter Universe</button>
         </div>
+    </div>
+
+    <div id="debug-menu">
+        <div style="color: lime;">🔧 DEBUG</div>
+        <button class="debug-btn" onclick="isotopes += 1000000; updateUI();">+1M Iso</button>
+        <button class="debug-btn" onclick="spawnBoss()">Force Boss</button>
     </div>
 
     <div id="resource-bar">
         <span>Iso: <b id="isotope-count">0</b></span>
-        <span>Faith: <b id="faith-count" class="faith-text">0</b></span>
+        <span style="color:#00f2ff;">Faith: <b id="faith-count">0</b></span>
     </div>
 
     <nav id="main-nav">
         <button onclick="showScreen('play-screen')">World</button>
         <button onclick="showScreen('skill-screen')">Skills</button>
-        <button onclick="showScreen('faith-screen')" class="faith-text">Ascension</button>
+        <button onclick="showScreen('stat-screen')">Statistics</button>
     </nav>
 
     <main>
         <section id="play-screen" class="screen">
-            <h2 id="world-title">Planet Surface</h2>
-            <div id="grid-9x9"></div>
-            <button onclick="advanceDay()">Advance Day</button>
-            <div class="p-bar-bg"><div id="progress-bar"></div></div>
+            <div id="grid-container">
+                <div id="boss" onclick="attackBoss()">
+                    <b style="font-size: 10px;">STAR EATER</b>
+                    <div id="boss-hp"><div id="hp-fill" style="width:100%; height:100%; background: lime;"></div></div>
+                </div>
+                <div id="grid-9x9"></div>
+            </div>
+            <button onclick="advanceDay()" style="padding: 15px 30px;">Advance Day</button>
         </section>
 
-        <section id="skill-screen" class="screen" style="display:none;"><div id="skills-container"></div></section>
+        <section id="skill-screen" class="screen" style="display:none;">
+            <div id="skills-container"></div>
+        </section>
 
-        <section id="faith-screen" class="screen" style="display:none;">
-            <h2 class="faith-text">Divine Ascension</h2>
-            <div class="upgrade-card" style="border-color:#00f2ff;">
-                <p>Gain Faith Points (FP) by resetting your world. Current progress grants:</p>
-                <h3><span id="pending-faith">0</span> Faith Points</h3>
-                <button onclick="executeRebirth()" style="background:#00f2ff; color:black;">REBIRTH NOW</button>
+        <section id="stat-screen" class="screen" style="display:none;">
+            <h2>Hall of Records</h2>
+            <div class="upgrade-card">
+                <p>Manual Clicks: <b id="stat-clicks">0</b></p>
+                <p>Star Eaters Slain: <b id="stat-kills">0</b></p>
             </div>
-            
-            <h2 class="faith-text">Faith Shop</h2>
-            <div id="faith-shop-container"></div>
+            <div id="achievements-list"></div>
         </section>
     </main>
 
@@ -77,116 +99,120 @@
             { id: 7, name: "MegaCities", level: 0, base: 1000000, req: 6 }
         ];
 
-        let faithUpgrades = [
-            { id: 0, name: "Divine Magnet", desc: "2x Isotope gains", cost: 1, owned: false },
-            { id: 1, name: "Auto-Genesis", desc: "Days advance themselves", cost: 2, owned: false },
-            { id: 2, name: "Architect Touch", desc: "-20% Skill Costs", cost: 3, owned: false },
-            { id: 3, name: "Starter Core", desc: "Start with Lv1 Tectonics", cost: 1, owned: false }
+        let achievements = [
+            { id: 'click100', name: 'The Clicking God', desc: 'Click 100 times', icon: '🖱️', goal: 100, type: 'clicks', unlocked: false },
+            { id: 'iso1m', name: 'Isotope Tycoon', desc: 'Accumulate 1M Isotopes', icon: '💎', goal: 1000000, type: 'iso', unlocked: false },
+            { id: 'slayer', name: 'Slayer of Horrors', desc: 'Defeat a Star Eater', icon: '⚔️', goal: 1, type: 'kills', unlocked: false }
         ];
 
-        let isotopes = 0, faith = 0, currentDay = 1;
+        let isotopes = 0, faith = 0, currentDay = 1, clicks = 0, bossKills = 0;
+        let bossActive = false, bossHP = 100, bossPos = -150;
 
-        function checkIdentity() {
+        function login() {
+            let name = document.getElementById('god-name').value;
+            if(name === "Infinity") document.getElementById('debug-menu').style.display = 'block';
             document.getElementById('login-screen').style.display = 'none';
-            createGrid();
-            updateUI();
-            // Start Auto-Genesis loop if owned
-            setInterval(() => { if(faithUpgrades[1].owned) advanceDay(); }, 2000);
+            createGrid(); updateUI(); renderAchievements();
         }
 
         function createGrid() {
-            const grid = document.getElementById('grid-9x9');
-            grid.innerHTML = "";
-            for (let i = 0; i < 81; i++) grid.innerHTML += '<div class="tile"></div>';
+            const grid = document.getElementById('grid-9x9'); grid.innerHTML = "";
+            for (let i = 0; i < 81; i++) grid.innerHTML += '<div class="tile" id="tile-'+i+'"></div>';
         }
 
         function advanceDay() {
-            if (currentDay < 20) { currentDay++; } 
+            clicks++;
+            checkAchievements();
+            if (currentDay < 20) currentDay++; 
             else {
                 currentDay = 1;
-                let mult = faithUpgrades[0].owned ? 2 : 1;
-                isotopes += (50 + (skillsData.reduce((a,b)=>a+b.level,0) * 30)) * mult;
+                isotopes += (100 + (skillsData.reduce((a,b)=>a+b.level,0) * 50));
+                if(skillsData[7].level > 0 && !bossActive && Math.random() < 0.3) spawnBoss();
             }
             updateUI();
         }
 
-        function executeRebirth() {
-            let pending = Math.floor(Math.sqrt(isotopes / 500));
-            if (pending < 1) return alert("Not enough isotopes to earn Faith!");
-            
-            if (confirm(`Reset everything for ${pending} Faith?`)) {
-                faith += pending;
-                isotopes = 0;
-                currentDay = 1;
-                skillsData.forEach(s => s.level = (s.id === 0 && faithUpgrades[3].owned) ? 1 : 0);
-                updateWorldVisuals();
-                updateUI();
-                showScreen('play-screen');
+        function spawnBoss() {
+            bossActive = true; bossHP = 100; bossPos = -150;
+            document.getElementById('boss').style.display = 'flex';
+            let timer = setInterval(() => {
+                if(!bossActive) { clearInterval(timer); return; }
+                bossPos += 5;
+                document.getElementById('boss').style.top = bossPos + "px";
+                if(bossPos > 50) { alert("PLANET CONSUMED."); location.reload(); }
+            }, 1000);
+        }
+
+        function attackBoss() {
+            if(isotopes >= 5000) { 
+                isotopes -= 5000; bossHP -= 10; 
+                document.getElementById('hp-fill').style.width = bossHP + "%"; 
+                if(bossHP <= 0) {
+                    bossActive = false; document.getElementById('boss').style.display = 'none';
+                    faith += 50; bossKills++; checkAchievements();
+                } 
+                updateUI(); 
             }
         }
 
-        function buyFaithUpgrade(id) {
-            let u = faithUpgrades[id];
-            if (faith >= u.cost && !u.owned) {
-                faith -= u.cost;
-                u.owned = true;
-                updateUI();
-            }
+        function checkAchievements() {
+            achievements.forEach(ach => {
+                if (!ach.unlocked) {
+                    if (ach.type === 'clicks' && clicks >= ach.goal) unlock(ach);
+                    if (ach.type === 'iso' && isotopes >= ach.goal) unlock(ach);
+                    if (ach.type === 'kills' && bossKills >= ach.goal) unlock(ach);
+                }
+            });
+        }
+
+        function unlock(ach) {
+            ach.unlocked = true;
+            renderAchievements();
+        }
+
+        function renderAchievements() {
+            const container = document.getElementById('achievements-list');
+            container.innerHTML = "<h3>Achievements</h3>";
+            achievements.forEach(ach => {
+                container.innerHTML += `
+                    <div class="achievement-row ${ach.unlocked ? 'unlocked' : ''}">
+                        <div class="ach-icon">${ach.icon}</div>
+                        <div class="ach-info">
+                            <b>${ach.unlocked ? ach.name : '???'}</b><br>
+                            <small>${ach.desc}</small>
+                        </div>
+                    </div>`;
+            });
         }
 
         function buySkill(id) {
-            let s = skillsData[id];
-            let costMult = faithUpgrades[2].owned ? 0.8 : 1;
-            let cost = Math.floor((s.base * Math.pow(2.2, s.level)) * costMult);
-            if (isotopes >= cost) {
-                isotopes -= cost;
-                s.level++;
-                updateWorldVisuals();
-                updateUI();
-            }
+            let s = skillsData[id], cost = Math.floor(s.base * Math.pow(2.2, s.level));
+            if (isotopes >= cost) { isotopes -= cost; s.level++; updateWorldVisuals(); updateUI(); checkAchievements(); }
         }
 
         function updateWorldVisuals() {
-            const tiles = document.querySelectorAll('.tile');
-            tiles.forEach((t, i) => {
-                t.className = 'tile';
+            for(let i=0; i<81; i++) {
+                let t = document.getElementById('tile-'+i); t.className = 'tile';
                 if (i < skillsData[7].level * 10) t.classList.add('stage-city');
                 else if (i < skillsData[5].level * 12) t.classList.add('stage-flowers');
                 else if (i < skillsData[3].level * 15) t.classList.add('stage-ocean');
                 else if (i < skillsData[1].level * 15) t.classList.add('stage-red');
                 else if (i < skillsData[0].level * 20) t.classList.add('stage-rock');
-            });
-            let totalLv = skillsData.reduce((a, b) => a + b.level, 0);
-            document.getElementById('progress-bar').style.width = (totalLv / 40 * 100) + "%";
+            }
         }
 
         function updateUI() {
             document.getElementById('isotope-count').innerText = Math.floor(isotopes).toLocaleString();
             document.getElementById('faith-count').innerText = faith;
-            document.getElementById('pending-faith').innerText = Math.floor(Math.sqrt(isotopes / 500));
-
-            // Skills
-            const sCon = document.getElementById('skills-container');
-            sCon.innerHTML = "<h2>Planetary Skills</h2>";
+            document.getElementById('stat-clicks').innerText = clicks;
+            document.getElementById('stat-kills').innerText = bossKills;
+            const sCon = document.getElementById('skills-container'); sCon.innerHTML = "<h2>Planetary Skills</h2>";
             skillsData.forEach(s => {
-                let canBuy = s.req === -1 || skillsData[s.req].level > 0;
-                let costMult = faithUpgrades[2].owned ? 0.8 : 1;
-                let cost = Math.floor((s.base * Math.pow(2.2, s.level)) * costMult);
-                sCon.innerHTML += `<div class="upgrade-card" style="opacity:${canBuy?1:0.3}">
-                    <b>${canBuy ? s.name : "???"}</b> (Lv ${s.level}/5)<br>
-                    <button onclick="buySkill(${s.id})" ${isotopes < cost || !canBuy || s.level >= 5 ? 'disabled' : ''}>${s.level >= 5 ? 'MAX' : cost.toLocaleString() + ' Iso'}</button>
-                </div>`;
-            });
-
-            // Faith Shop
-            const fCon = document.getElementById('faith-shop-container');
-            fCon.innerHTML = "";
-            faithUpgrades.forEach(u => {
-                fCon.innerHTML += `<div class="upgrade-card" style="border-color:#00f2ff">
-                    <b>${u.name}</b><br><small>${u.desc}</small><br>
-                    <button onclick="buyFaithUpgrade(${u.id})" ${faith < u.cost || u.owned ? 'disabled' : ''} style="background:#00f2ff; color:black;">
-                        ${u.owned ? 'OWNED' : u.cost + ' FP'}
-                    </button>
+                let unl = s.req === -1 || skillsData[s.req].level > 0;
+                let cost = Math.floor(s.base * Math.pow(2.2, s.level));
+                sCon.innerHTML += `<div class="upgrade-card" style="opacity:${unl?1:0.3}">
+                    <b>${unl ? s.name : "Locked"}</b> (Lv ${s.level}/5)<br>
+                    <button onclick="buySkill(${s.id})" ${isotopes < cost || !unl || s.level >= 5 ? 'disabled' : ''}>${cost.toLocaleString()} Iso</button>
                 </div>`;
             });
         }
@@ -197,4 +223,4 @@
         }
     </script>
 </body>
-    </html>
+                    </html>
