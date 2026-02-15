@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator 4.0: Divine Rebirth</title>
+    <title>God Simulator 4.1: Land Fix</title>
     <style>
         body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; transition: background 2s; overflow-x: hidden; }
         body.night { background: #000005; }
@@ -11,86 +11,77 @@
         .login-box { border: 2px solid #ed1e79; padding: 30px; border-radius: 15px; background: #111; box-shadow: 0 0 20px #ed1e79; }
         #resource-bar { background: #1a1a2e; padding: 10px; display: flex; justify-content: space-between; border-bottom: 2px solid #ed1e79; position: sticky; top: 0; z-index: 1000; }
         #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; flex-wrap: wrap; }
-        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 30px); gap: 2px; justify-content: center; margin: 20px auto; width: fit-content; border: 1px solid #333; padding: 5px; }
-        .tile { width: 30px; height: 30px; background: #222; border-radius: 2px; transition: 0.5s; }
-        .stage-rock { background: #636e72; } .stage-red { background: #c0392b; } .stage-ocean { background: #0984e3; }
-        .stage-flowers { background: #00b894; } .stage-city { background: #f1c40f; box-shadow: 0 0 5px gold; }
+        
+        /* THE GRID FIX */
+        #grid-9x9 { 
+            display: grid; 
+            grid-template-columns: repeat(9, 30px); 
+            grid-template-rows: repeat(9, 30px);
+            gap: 2px; 
+            justify-content: center; 
+            margin: 20px auto; 
+            width: fit-content; 
+            border: 2px solid #333; 
+            padding: 5px;
+            background: #111;
+        }
+        .tile { 
+            width: 30px; 
+            height: 30px; 
+            background: #1a1a1a; /* Darker grey so empty tiles are visible */
+            border: 1px solid #222; 
+            border-radius: 2px; 
+            transition: 0.5s; 
+        }
+        
+        /* STAGES */
+        .stage-rock { background: #636e72 !important; border-color: #b2bec3; } 
+        .stage-red { background: #c0392b !important; border-color: #e74c3c; } 
+        .stage-ocean { background: #0984e3 !important; border-color: #74b9ff; }
+        .stage-flowers { background: #00b894 !important; border-color: #55efc4; } 
+        .stage-city { background: #f1c40f !important; box-shadow: inset 0 0 5px gold; border-color: gold; }
+
         .upgrade-card { background: #161b33; padding: 10px; margin: 8px auto; border: 1px solid #444; border-radius: 8px; width: 85%; max-width: 400px; }
-        .p-bar-bg { width: 100%; height: 10px; background: #000; border-radius: 5px; margin: 5px 0; }
         #progress-bar { height: 100%; width: 0%; background: #00f2ff; transition: 0.5s; }
-        .overlay-menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; border: 2px solid white; z-index: 4000; border-radius: 10px; background: #111; }
+        .p-bar-bg { width: 100%; height: 10px; background: #000; border-radius: 5px; margin: 10px auto; overflow: hidden; }
         button { cursor: pointer; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; color: white; background: #ed1e79; margin: 2px; }
         button:disabled { background: #333 !important; color: #666 !important; }
         .faith-text { color: #00f2ff; text-shadow: 0 0 5px #00f2ff; }
-        #relics-list { display: flex; flex-wrap: wrap; justify-content: center; }
-        .relic-icon { padding: 5px; border: 1px solid gold; border-radius: 5px; margin: 3px; font-size: 0.6rem; background: #2c2c10; color: gold; }
     </style>
 </head>
-<body class="day">
+<body>
 
     <div id="login-screen" class="full-overlay">
         <div class="login-box">
-            <h1>GOD SIMULATOR 4.0</h1>
-            <p class="faith-text">Ascended Edition</p>
+            <h1>GOD SIMULATOR 4.1</h1>
             <input type="text" id="god-input" placeholder="Divine Name...">
-            <button onclick="checkIdentity()">Genesis</button><br><br>
-            <button onclick="attemptAutoLoad()" style="background:#00f2ff; color:black;">Continue Save</button>
+            <button onclick="checkIdentity()">Genesis</button>
         </div>
-    </div>
-
-    <div id="rebirth-menu" class="full-overlay" style="display:none; background: rgba(0,0,0,0.95);">
-        <h1 class="faith-text">DIVINE REBIRTH</h1>
-        <p>Your current world has reached its limit. Ascend to a higher plane?</p>
-        <p>You will gain: <b id="pending-faith" class="faith-text">0</b> Faith Points</p>
-        <button onclick="executeRebirth()" style="background:#00f2ff; color:black; padding: 15px 30px;">ASCEND NOW</button>
-        <button onclick="document.getElementById('rebirth-menu').style.display='none'">Not Yet</button>
     </div>
 
     <div id="resource-bar">
         <span>Iso: <b id="isotope-count">0</b></span>
         <span>Faith: <b id="faith-count" class="faith-text">0</b></span>
-        <button onclick="manualSave()" style="background:#2ecc71; font-size:0.7rem;">Save</button>
     </div>
 
     <nav id="main-nav">
         <button onclick="showScreen('play-screen')">World</button>
         <button onclick="showScreen('skill-screen')">Skills</button>
-        <button onclick="showScreen('miracle-screen')">Miracles</button>
-        <button onclick="showScreen('faith-screen')" class="faith-text">Ascension</button>
         <button onclick="showScreen('stats-screen')">Stats</button>
     </nav>
 
     <main>
         <section id="play-screen" class="screen">
-            <h2 id="world-title">New World</h2>
+            <h2>Current Planet</h2>
             <div id="grid-9x9"></div>
-            <button onclick="advanceDay(false)">Advance Day</button>
-            <div style="width:200px; margin: 10px auto;" class="p-bar-bg"><div id="progress-bar"></div></div>
-        </section>
-
-        <section id="faith-screen" class="screen" style="display:none;">
-            <h2 class="faith-text">Ascension Upgrades</h2>
-            <div class="upgrade-card"><b>Divine Magnet</b> (1 FP)<br>2x Isotope gains forever.<br><button id="f-upg-0" onclick="buyFaithUpgrade(0)">Buy</button></div>
-            <div class="upgrade-card"><b>Instant Life</b> (2 FP)<br>Start every rebirth with Lv 1 Tectonics.<br><button id="f-upg-1" onclick="buyFaithUpgrade(1)">Buy</button></div>
-            <div class="upgrade-card"><b>Hyper-Drones</b> (5 FP)<br>Drones advance time twice as fast.<br><button id="f-upg-2" onclick="buyFaithUpgrade(2)">Buy</button></div>
-            <button onclick="openRebirthMenu()" style="background:#00f2ff; color:black; margin-top:20px;">PERFORM REBIRTH</button>
-        </section>
-
-        <section id="stats-screen" class="screen" style="display:none;">
-            <h2>Statues & Relics</h2>
-            <div id="relics-list" class="upgrade-card"></div>
-            <div class="upgrade-card">
-                <p>Divine Multiplier: <b id="stat-pwr">1.0x</b></p>
-                <p>Rebirths: <b id="stat-rebirths">0</b></p>
-            </div>
+            <button onclick="advanceDay()">Advance Day</button>
+            <div class="p-bar-bg" style="width: 280px;"><div id="progress-bar"></div></div>
         </section>
 
         <section id="skill-screen" class="screen" style="display:none;"><div id="skills-container"></div></section>
-        <section id="miracle-screen" class="screen" style="display:none;">
-            <h2>Miracles</h2>
-            <div class="upgrade-card">Rain (+5 Days) | 200 Iso<br><button onclick="castMiracle('rain')">Cast</button></div>
+        <section id="stats-screen" class="screen" style="display:none;">
+            <div class="upgrade-card">Rebirths: <b id="stat-rebirths">0</b></div>
         </section>
-        <section id="addon-screen" class="screen" style="display:none;"><div id="generators-container"></div></section>
     </main>
 
     <script>
@@ -105,124 +96,84 @@
             { id: 7, name: "MegaCities", level: 0, base: 1000000, req: 6 }
         ];
 
-        var isotopes = 0, faith = 0, lifetimeIso = 0, currentDay = 1, rebirths = 0;
-        var faithUpgrades = [false, false, false]; // [Magnet, Instant, Hyper]
-        var addonsOwned = 0, ownedRelics = [], celestialPower = 1.0;
+        var isotopes = 0, faith = 0, currentDay = 1;
 
         function checkIdentity() {
             document.getElementById('login-screen').style.display = 'none';
-            createGrid(); startLoops();
-        }
-
-        function advanceDay(isAuto) {
-            let speed = (faithUpgrades[2] && isAuto) ? 2 : 1;
-            if (currentDay < 20) {
-                currentDay += speed;
-                if(currentDay > 20) currentDay = 20;
-            } else {
-                let mag = faithUpgrades[0] ? 2 : 1;
-                let rew = (30 + (skillsData.reduce((a,b)=>a+b.level,0)*20)) * celestialPower * mag;
-                isotopes += rew; lifetimeIso += rew;
-                currentDay = 1; updateWorldVisuals();
-            }
+            createGrid(); 
+            updateWorldVisuals();
             updateUI();
         }
 
-        function openRebirthMenu() {
-            let pending = Math.floor(Math.sqrt(lifetimeIso / 100000));
-            document.getElementById('pending-faith').innerText = pending;
-            document.getElementById('rebirth-menu').style.display = 'flex';
-        }
-
-        function executeRebirth() {
-            let pending = Math.floor(Math.sqrt(lifetimeIso / 100000));
-            if(pending < 1) { alert("Not enough lifetime progress to gain Faith!"); return; }
-            
-            faith += pending; rebirths++;
-            isotopes = 0; lifetimeIso = 0; currentDay = 1;
-            skillsData.forEach(s => s.level = (s.id === 0 && faithUpgrades[1]) ? 1 : 0);
-            
-            document.getElementById('rebirth-menu').style.display = 'none';
-            updateWorldVisuals(); updateUI();
-            alert("The world is reborn in your image.");
-        }
-
-        function buyFaithUpgrade(id) {
-            let costs = [1, 2, 5];
-            if(faith >= costs[id] && !faithUpgrades[id]) {
-                faith -= costs[id]; faithUpgrades[id] = true; updateUI();
-            }
-        }
-
-        function startLoops() {
-            setInterval(() => updateUI(), 1000);
-            setInterval(() => { if(addonsOwned > 0) advanceDay(true); }, 1000);
-            setInterval(() => saveGame(), 10000);
-        }
-
         function createGrid() {
-            const grid = document.getElementById('grid-9x9'); grid.innerHTML = "";
-            for (let i = 0; i < 81; i++) grid.innerHTML += '<div class="tile"></div>';
+            const grid = document.getElementById('grid-9x9');
+            grid.innerHTML = "";
+            for (let i = 0; i < 81; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'tile';
+                grid.appendChild(tile);
+            }
         }
 
         function updateWorldVisuals() {
             const tiles = document.querySelectorAll('.tile');
-            const lvls = skillsData.map(s => s.level);
+            if (tiles.length === 0) return;
+
             tiles.forEach((t, i) => {
-                t.className = 'tile';
-                if (i < lvls[7]*10) t.classList.add('stage-city');
-                else if (i < lvls[5]*15) t.classList.add('stage-flowers');
-                else if (i < lvls[3]*15) t.classList.add('stage-ocean');
-                else if (i < lvls[1]*15) t.classList.add('stage-red');
-                else if (i < lvls[0]*15) t.classList.add('stage-rock');
+                t.className = 'tile'; // Reset
+                if (i < skillsData[7].level * 10) t.classList.add('stage-city');
+                else if (i < skillsData[5].level * 12) t.classList.add('stage-flowers');
+                else if (i < skillsData[3].level * 15) t.classList.add('stage-ocean');
+                else if (i < skillsData[1].level * 15) t.classList.add('stage-red');
+                else if (i < skillsData[0].level * 20) t.classList.add('stage-rock');
             });
-            let prog = Math.min(100, Math.floor((lvls.reduce((a,b)=>a+b,0)/40)*100));
-            document.getElementById('progress-bar').style.width = prog + "%";
+
+            let totalLv = skillsData.reduce((a, b) => a + b.level, 0);
+            document.getElementById('progress-bar').style.width = (totalLv / 40 * 100) + "%";
+        }
+
+        function advanceDay() {
+            if (currentDay < 20) {
+                currentDay++;
+            } else {
+                currentDay = 1;
+                isotopes += 50 + (skillsData.reduce((a,b)=>a+b.level,0) * 25);
+            }
+            updateUI();
+        }
+
+        function buySkill(id) {
+            let s = skillsData[id];
+            let cost = Math.floor(s.base * Math.pow(2.2, s.level));
+            if (isotopes >= cost) {
+                isotopes -= cost;
+                s.level++;
+                updateWorldVisuals();
+                updateUI();
+            }
         }
 
         function updateUI() {
             document.getElementById('isotope-count').innerText = Math.floor(isotopes).toLocaleString();
-            document.getElementById('faith-count').innerText = faith;
-            document.getElementById('stat-rebirths').innerText = rebirths;
-            document.getElementById('stat-pwr').innerText = celestialPower.toFixed(1) + "x";
-
             const sCon = document.getElementById('skills-container');
-            sCon.innerHTML = "<h3>Restoration</h3>";
+            sCon.innerHTML = "<h2>Restore the Planet</h2>";
             skillsData.forEach(s => {
-                let open = s.req === -1 || skillsData[s.req].level > 0;
+                let canBuy = s.req === -1 || skillsData[s.req].level > 0;
                 let cost = Math.floor(s.base * Math.pow(2.2, s.level));
-                sCon.innerHTML += `<div class="upgrade-card" style="opacity:${open?1:0.4}"><b>${open?s.name:'Locked'}</b> [Lv ${s.level}/5]<br><button onclick="buySkill(${s.id})" ${isotopes<cost||s.level>=5||!open?'disabled':''}>${cost.toLocaleString()}</button></div>`;
+                sCon.innerHTML += `
+                    <div class="upgrade-card" style="opacity:${canBuy?1:0.3}">
+                        <b>${canBuy ? s.name : "???"}</b> (Lv ${s.level}/5)<br>
+                        <button onclick="buySkill(${s.id})" ${isotopes < cost || !canBuy || s.level >= 5 ? 'disabled' : ''}>
+                            ${s.level >= 5 ? 'MAX' : cost.toLocaleString() + ' Iso'}
+                        </button>
+                    </div>`;
             });
-
-            for(let i=0; i<3; i++) {
-                let btn = document.getElementById('f-upg-'+i);
-                if(faithUpgrades[i]) { btn.innerText = "OWNED"; btn.disabled = true; }
-            }
         }
 
-        function buySkill(id) { 
-            let s = skillsData[id]; let cost = Math.floor(s.base * Math.pow(2.2, s.level)); 
-            if(isotopes>=cost){isotopes-=cost; s.level++; updateWorldVisuals(); updateUI();} 
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
         }
-
-        function saveGame() {
-            let d = { i: isotopes, f: faith, li: lifetimeIso, r: rebirths, fu: faithUpgrades, sk: skillsData.map(s=>s.level) };
-            localStorage.setItem('godSimSaveV4', JSON.stringify(d));
-        }
-
-        function attemptAutoLoad() {
-            let raw = localStorage.getItem('godSimSaveV4');
-            if(raw) {
-                let d = JSON.parse(raw);
-                isotopes=d.i; faith=d.f; lifetimeIso=d.li; rebirths=d.r; faithUpgrades=d.fu;
-                d.sk.forEach((l, i) => skillsData[i].level = l);
-                document.getElementById('login-screen').style.display = 'none';
-                createGrid(); startLoops(); updateWorldVisuals(); updateUI();
-            }
-        }
-
-        function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.style.display='none'); document.getElementById(id).style.display='block'; }
-        function manualSave() { saveGame(); alert("Universe Saved."); }
     </script>
 </body>
-    </html>
+</html>
