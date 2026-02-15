@@ -1,31 +1,21 @@
-body { background: #050508; color: white; font-family: sans-serif; margin: 0; text-align: center; transition: background 2s; overflow-x: hidden; }
+body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; transition: background 2s; }
 body.night { background: #000005; }
 .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 3000; }
-.login-box { border: 2px solid #ed1e79; padding: 40px; border-radius: 15px; background: #111; box-shadow: 0 0 30px #ed1e79; }
-.overlay-menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #161b33; padding: 15px; border: 2px solid #00f2ff; z-index: 2000; border-radius: 10px; width: 280px; max-height: 90vh; overflow-y: auto; }
-
-#mission-box { position: fixed; top: 80px; right: 10px; width: 160px; background: rgba(0,0,0,0.9); border: 1px solid #00f2ff; padding: 10px; border-radius: 8px; z-index: 100; text-align: left; }
-.p-bar-bg { width: 100%; height: 8px; background: #111; border-radius: 4px; margin: 4px 0; }
-#power-fill { height: 100%; background: #f1c40f; width: 0%; transition: 0.3s; }
-.progress-container { width: 100%; background: #222; height: 10px; border-radius: 5px; overflow: hidden; margin-top: 5px; }
-#progress-bar { width: 0%; background: #00f2ff; height: 100%; transition: 0.5s; }
-
-#battery-btn { width: 100%; font-size: 0.6rem; padding: 5px; margin-top: 5px; border: none; border-radius: 3px; font-weight: bold; cursor: pointer; }
+.login-box { border: 2px solid #ed1e79; padding: 30px; border-radius: 15px; background: #111; box-shadow: 0 0 20px #ed1e79; }
+#resource-bar { background: #1a1a2e; padding: 10px; display: flex; justify-content: space-between; border-bottom: 2px solid #ed1e79; position: sticky; top: 0; z-index: 1000; }
+#main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
+#grid-9x9 { display: grid; grid-template-columns: repeat(9, 30px); gap: 2px; justify-content: center; margin: 20px auto; width: fit-content; }
+.tile { width: 30px; height: 30px; background: #222; border-radius: 2px; }
+.stage-rock { background: #636e72; } .stage-red { background: #c0392b; } .stage-ocean { background: #0984e3; }
+.stage-flowers { background: #00b894; } .stage-city { background: #f1c40f; box-shadow: 0 0 5px gold; }
+.upgrade-card { background: #161b33; padding: 10px; margin: 8px auto; border: 1px solid #444; border-radius: 8px; width: 80%; }
+.p-bar-bg { width: 100%; height: 10px; background: #000; border-radius: 5px; margin: 5px 0; }
+#power-fill { height: 100%; width: 0%; background: #f1c40f; transition: 0.3s; }
+.progress-container { width: 100%; background: #222; height: 12px; border-radius: 6px; margin-top: 10px; }
+#progress-bar { height: 100%; width: 0%; background: #00f2ff; transition: 0.5s; }
 .battery-ready { background: #2ecc71 !important; color: black; }
-.battery-active { background: #f1c40f !important; color: black; animation: flash 0.5s infinite; }
-.battery-cooldown { background: #444 !important; color: #888; }
-
-#grid-9x9 { display: grid; grid-template-columns: repeat(9, 32px); gap: 2px; justify-content: center; margin: 20px auto; background: #111; padding: 5px; width: fit-content; }
-.tile { width: 32px; height: 32px; background: #3d2b1f; border-radius: 2px; }
-.stage-rock { background: #636e72 !important; }
-.stage-red { background: #c0392b !important; }
-.stage-ocean { background: #0984e3 !important; }
-.stage-flowers { background: #00b894 !important; }
-.stage-city { background: #f1c40f !important; box-shadow: 0 0 8px gold; }
-
-#resource-bar { background: #1a1a2e; padding: 10px; display: flex; justify-content: space-around; border-bottom: 2px solid #ed1e79; align-items: center; position: sticky; top: 0; z-index: 500; }
-.upgrade-card { background: #161b33; padding: 10px; margin: 5px; border: 1px solid #444; display: inline-block; width: 140px; border-radius: 8px; font-size: 0.8rem; }
-button { cursor: pointer; padding: 8px; background: #ed1e79; color: white; border: none; border-radius: 4px; font-weight: bold; }
-button:disabled { background: #333 !important; color: #777 !important; }
-textarea { width: 100%; height: 50px; background: #000; color: #00f2ff; font-size: 10px; margin-bottom: 5px; }
-@keyframes flash { 50% { opacity: 0.5; } }
+.battery-active { background: #f1c40f !important; animation: blink 0.5s infinite; }
+.overlay-menu { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); padding: 20px; border: 2px solid white; z-index: 4000; border-radius: 10px; }
+button { cursor: pointer; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; color: white; background: #ed1e79; margin: 2px; }
+button:disabled { background: #333 !important; color: #666 !important; }
+@keyframes blink { 50% { opacity: 0.5; } }
