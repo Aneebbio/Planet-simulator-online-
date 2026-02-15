@@ -3,16 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator 2.6: Galactic Empire</title>
+    <title>God Simulator 2.8</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="day">
 
     <div id="login-screen" class="full-overlay">
         <div class="login-box">
-            <h1>GOD SIMULATOR 2.6</h1>
+            <h1>GOD SIMULATOR 2.8</h1>
             <input type="text" id="god-input" placeholder="Divine Name...">
             <button onclick="checkIdentity()">Genesis</button>
+            <br><br>
+            <button onclick="attemptAutoLoad()" style="background:#00f2ff; color:black; font-size:0.8rem;">Continue Save</button>
         </div>
     </div>
 
@@ -25,8 +27,9 @@
         <span>Iso: <b id="isotope-count">0</b></span>
         <span>Day: <b id="day-count">1</b>/20</span>
         <div class="save-btns">
-            <button onclick="processExport()" style="background:#2ecc71;">Save</button>
-            <button onclick="processImport()" style="background:#00f2ff; color:black;">Load</button>
+            <span id="save-status" style="font-size:0.7rem; color:#aaa; margin-right:10px;">Saved</span>
+            <button onclick="manualSave()" style="background:#2ecc71; font-size:0.7rem;">Save</button>
+            <button onclick="hardReset()" style="background:#e74c3c; font-size:0.7rem;">Wipe</button>
         </div>
     </div>
 
@@ -95,4 +98,4 @@
     <script src="save.js"></script>
     <script src="game.js"></script>
 </body>
-                                                         </html>
+    </html>
