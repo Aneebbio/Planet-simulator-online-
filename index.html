@@ -3,48 +3,58 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator: Ascension</title>
+    <title>God Simulator 2.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
-<body>
+<body class="day">
 
     <div id="login-screen" class="full-overlay">
         <div class="login-box">
-            <h1>GOD SIMULATOR</h1>
-            <p>Identify yourself, Creator.</p>
-            <input type="text" id="god-input" placeholder="Enter your Divine Name">
-            <button onclick="checkIdentity()">Begin Existence</button>
+            <h1>GOD SIMULATOR 2.0</h1>
+            <input type="text" id="god-input" placeholder="Your Divine Name...">
+            <button onclick="checkIdentity()">Genesis</button>
         </div>
+    </div>
+
+    <div id="galaxy-screen" class="full-overlay" style="display:none; flex-direction:column;">
+        <h1 style="color:gold;">SELECT A SEED WORLD</h1>
+        <div id="planet-options" style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;"></div>
     </div>
 
     <div id="save-menu" class="overlay-menu" style="display:none;">
         <h3>Universe Data</h3>
-        <textarea id="save-box" placeholder="Your code will appear here..."></textarea>
-        <div class="menu-buttons">
-            <button onclick="processExport()">Get Code</button>
-            <button onclick="processImport()">Load Code</button>
-            <button onclick="toggleSaveMenu()" style="background:#555;">Close</button>
+        <textarea id="save-box"></textarea>
+        <div style="display:flex; justify-content:space-between; margin-top:10px;">
+            <button onclick="processExport()">Export</button>
+            <button onclick="processImport()">Import</button>
+            <button onclick="toggleSaveMenu()" style="background:#444;">Close</button>
         </div>
     </div>
 
     <div id="mission-box">
-        <h4>DIVINE MISSION</h4>
-        <p id="news-ticker" style="color:#ff00ff; font-size:0.7rem; min-height:15px;">Initializing...</p>
+        <h4 id="world-title">PLANET: NONE</h4>
+        <div id="power-container">
+            <div style="display:flex; justify-content:space-between; font-size:0.65rem;">
+                <span id="cycle-text">☀️ DAY</span>
+                <span id="power-val">0/0 Pwr</span>
+            </div>
+            <div class="p-bar-bg"><div id="power-fill"></div></div>
+        </div>
+        <p id="news-ticker">Initializing...</p>
         <div class="progress-container"><div id="progress-bar"></div></div>
         <span id="progress-percent">0% Restored</span>
-        <p id="ascension-text" style="color:gold; font-size:0.8rem; margin-top:5px;">Power: 1.0x</p>
     </div>
 
     <div id="resource-bar">
         <span>Isotopes: <b id="isotope-count">0</b></span>
         <span>Day: <b id="day-count">1</b>/20</span>
-        <button onclick="toggleSaveMenu()" style="padding:5px 10px; font-size:0.8rem;">Save/Load</button>
+        <button onclick="toggleSaveMenu()" style="padding:4px 8px; font-size:0.7rem;">Save/Load</button>
     </div>
 
     <nav id="main-nav">
-        <button onclick="showScreen('play-screen')">Play</button>
-        <button onclick="showScreen('skill-screen')">Skills</button>
-        <button onclick="showScreen('addon-screen')">Add-ons</button>
+        <button onclick="showScreen('play-screen')">World</button>
+        <button onclick="showScreen('skill-screen')">Restoration</button>
+        <button onclick="showScreen('addon-screen')">Energy</button>
         <button onclick="showScreen('stats-screen')">Stats</button>
     </nav>
 
@@ -53,37 +63,31 @@
             <div id="grid-9x9"></div>
             <button id="advance-btn" onclick="advanceDay()">Advance Day</button>
             <br>
-            <button id="prestige-btn" style="display:none; background:gold; color:black; margin-top:20px; font-weight:bold;" onclick="ascend()">ASCEND UNIVERSE</button>
+            <button id="prestige-btn" style="display:none; background:gold; color:black; margin-top:20px;" onclick="ascend()">ASCEND UNIVERSE</button>
         </section>
-        
+
         <section id="skill-screen" class="screen" style="display:none;">
             <div id="skills-container"></div>
         </section>
 
         <section id="addon-screen" class="screen" style="display:none;">
+            <div id="generators-container"></div>
             <div id="addons-list"></div>
         </section>
 
         <section id="stats-screen" class="screen" style="display:none;">
             <h2>Universe Statistics</h2>
-            <div class="upgrade-card" style="width: 85%; text-align: left; margin: 0 auto;">
-                <p>Divine Name: <b id="stat-name">Unknown</b></p>
-                <p>Time Played: <b id="stat-time">0s</b></p>
+            <div class="upgrade-card" style="width:85%;">
+                <p>Creator: <b id="stat-name">---</b></p>
                 <p>Lifetime Isotopes: <b id="stat-lifetime">0</b></p>
-                <p>Total Ascensions: <b id="stat-ascends">0</b></p>
+                <p>Power Multiplier: <b id="stat-pwr">1.0x</b></p>
             </div>
-
-            <h3>🏆 Galactic Leaderboard</h3>
-            <table id="leaderboard-table">
-                <thead>
-                    <tr style="color: gold;"><th>Rank</th><th>Name</th><th>Score</th></tr>
-                </thead>
-                <tbody id="leaderboard-body">
-                    </tbody>
-            </table>
+            <h3>🏆 Leaderboard</h3>
+            <table id="leaderboard-table"><tbody id="leaderboard-body"></tbody></table>
         </section>
     </main>
 
+    <script src="planet.js"></script>
     <script src="game.js"></script>
     <script src="skills.js"></script>
     <script src="save.js"></script>
