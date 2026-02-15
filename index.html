@@ -3,58 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator 2.0</title>
+    <title>God Simulator 2.6: Galactic Empire</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body class="day">
 
     <div id="login-screen" class="full-overlay">
         <div class="login-box">
-            <h1>GOD SIMULATOR 2.0</h1>
-            <input type="text" id="god-input" placeholder="Your Divine Name...">
+            <h1>GOD SIMULATOR 2.6</h1>
+            <input type="text" id="god-input" placeholder="Divine Name...">
             <button onclick="checkIdentity()">Genesis</button>
         </div>
     </div>
 
     <div id="galaxy-screen" class="full-overlay" style="display:none; flex-direction:column;">
         <h1 style="color:gold;">SELECT A SEED WORLD</h1>
-        <div id="planet-options" style="display:flex; gap:20px; flex-wrap:wrap; justify-content:center;"></div>
-    </div>
-
-    <div id="save-menu" class="overlay-menu" style="display:none;">
-        <h3>Universe Data</h3>
-        <p style="font-size: 10px; color: #aaa;">Click "Export" then "Copy" to save your code.</p>
-        <textarea id="save-box" readonly></textarea>
-        <div style="display:flex; flex-direction: column; gap: 5px;">
-            <button onclick="processExport()">1. Export Code</button>
-            <button onclick="copySaveCode()" style="background: #2ecc71;">2. Copy to Clipboard</button>
-            <hr>
-            <p style="font-size: 10px; color: #aaa;">Paste code below then click Import:</p>
-            <textarea id="import-box" placeholder="Paste code here..."></textarea>
-            <button onclick="processImport()" style="background: #00f2ff; color: black;">3. Import Paste</button>
-            <button onclick="toggleSaveMenu()" style="background:#444;">Close</button>
-        </div>
-    </div>
-
-    <div id="mission-box">
-        <h4 id="world-title">PLANET: NONE</h4>
-        <div id="power-container">
-            <div style="display:flex; justify-content:space-between; font-size:0.65rem;">
-                <span id="cycle-text">☀️ DAY</span>
-                <span id="power-val">0/0 Pwr</span>
-            </div>
-            <div class="p-bar-bg"><div id="power-fill"></div></div>
-            <button id="battery-btn" onclick="useBattery()" class="battery-ready">🔋 BATTERY: READY</button>
-        </div>
-        <p id="news-ticker">Initializing...</p>
-        <div class="progress-container"><div id="progress-bar"></div></div>
-        <span id="progress-percent">0% Restored</span>
+        <div id="planet-options" style="display:flex; gap:15px; flex-wrap:wrap; justify-content:center;"></div>
     </div>
 
     <div id="resource-bar">
         <span>Iso: <b id="isotope-count">0</b></span>
         <span>Day: <b id="day-count">1</b>/20</span>
-        <button onclick="toggleSaveMenu()" style="padding:4px 8px; font-size:0.7rem;">Menu</button>
+        <div class="save-btns">
+            <button onclick="processExport()" style="background:#2ecc71;">Save</button>
+            <button onclick="processImport()" style="background:#00f2ff; color:black;">Load</button>
+        </div>
     </div>
 
     <nav id="main-nav">
@@ -66,27 +39,60 @@
 
     <main>
         <section id="play-screen" class="screen">
+            <h2 id="world-title">-</h2>
             <div id="grid-9x9"></div>
             <button id="advance-btn" onclick="advanceDay(false)">Advance Day</button>
-            <br>
-            <button id="prestige-btn" style="display:none; background:gold; color:black; margin-top:20px;" onclick="ascend()">ASCEND UNIVERSE</button>
+            <p id="news-ticker">Initializing Grid...</p>
         </section>
+
+        <section id="stats-screen" class="screen" style="display:none;">
+            <h2>Universe States</h2>
+            
+            <div class="upgrade-card" style="width:90%; border-color: gold;">
+                <h4 style="color:gold; margin:5px;">SYSTEM STATUS</h4>
+                <div id="power-container">
+                    <div style="display:flex; justify-content:space-between; font-size:0.7rem;">
+                        <span id="cycle-text">☀️ DAY</span>
+                        <span id="power-val">0/0 Pwr</span>
+                    </div>
+                    <div class="p-bar-bg"><div id="power-fill"></div></div>
+                    <button id="battery-btn" onclick="useBattery()" class="battery-ready">🔋 EMERGENCY BATTERY</button>
+                </div>
+                <div class="progress-container"><div id="progress-bar"></div></div>
+                <center><span id="progress-percent" style="font-size:0.7rem;">0% Restored</span></center>
+            </div>
+
+            <div id="galaxy-portal" class="upgrade-card" style="display:none; width:90%; border-color: #a29bfe; background: #1e1e2e;">
+                <h4 style="color:#a29bfe;">🌌 GALAXY GATEWAY</h4>
+                <button onclick="openGalaxyMap()" style="background:#a29bfe; width:100%; color:black;">EXPLORE NEW WORLD</button>
+            </div>
+
+            <div class="upgrade-card" style="width:90%; border-color: #2ecc71;">
+                <h4 style="color:#2ecc71; margin:5px;">DAILY TRIBUTE</h4>
+                <button id="daily-btn" onclick="claimDailyReward()" style="width:100%; background:#2ecc71;">CLAIM REWARD</button>
+            </div>
+
+            <div class="upgrade-card" style="width:90%;">
+                <p>Creator: <b id="stat-name">---</b></p>
+                <p>Divine Multiplier: <b id="stat-pwr">1.0x</b></p>
+                <button id="debug-btn" style="display:none; background:red; width:100%;" onclick="toggleDebug()">🛠 DEBUG MENU</button>
+            </div>
+        </section>
+
         <section id="skill-screen" class="screen" style="display:none;"><div id="skills-container"></div></section>
         <section id="addon-screen" class="screen" style="display:none;"><div id="generators-container"></div><div id="addons-list"></div></section>
-        <section id="stats-screen" class="screen" style="display:none;">
-            <h2>Statistics</h2>
-            <div class="upgrade-card" style="width:85%;">
-                <p>Creator: <b id="stat-name">---</b></p>
-                <p>Lifetime Iso: <b id="stat-lifetime">0</b></p>
-                <p>Power: <b id="stat-pwr">1.0x</b></p>
-            </div>
-            <h3>🏆 Leaderboard</h3>
-            <table id="leaderboard-table"><tbody id="leaderboard-body"></tbody></table>
-        </section>
+
+        <div id="debug-menu" class="overlay-menu" style="display:none; background: #300;">
+            <h3>Infinity Console</h3>
+            <button onclick="isotopes += 1000000; updateUI();">+1M Iso</button>
+            <button onclick="skillsData.forEach(s=>s.level=5); updateWorldVisuals(); updateUI();">Max Skills</button>
+            <button onclick="debugWarpSpeed()" style="background:orange; color:black;">Warp Time (1s)</button>
+            <button onclick="toggleDebug()" style="background:#555;">Close</button>
+        </div>
     </main>
 
-    <script src="game.js"></script>
     <script src="skills.js"></script>
     <script src="save.js"></script>
+    <script src="game.js"></script>
 </body>
-    </html>
+                                                         </html>
