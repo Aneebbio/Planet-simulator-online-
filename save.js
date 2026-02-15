@@ -1,90 +1,26 @@
-// MENU CONTROL
 function toggleSaveMenu() {
-    const menu = document.getElementById('save-menu');
-    const box = document.getElementById('save-box');
-    if (menu.style.display === 'none') {
-        menu.style.display = 'block';
-        box.value = ""; // Clear box on open
-    } else {
-        menu.style.display = 'none';
-    }
+    let m = document.getElementById('save-menu');
+    m.style.display = m.style.display === 'none' ? 'block' : 'none';
 }
 
-// EXPORT LOGIC
 function processExport() {
-    // Create Data Object
-    let data = {
-        name: playerName,
-        iso: isotopes,
-        liso: lifetimeIsotopes,
-        time: totalSeconds,
-        asc: ascensions,
-        pwr: celestialPower,
-        day: currentDay,
-        add: addonsOwned,
-        sk: skillsData.map(s => s.level) // Save only the levels array
+    let d = { 
+        n: playerName, i: isotopes, li: lifetimeIsotopes, t: totalSeconds, a: ascensions, p: celestialPower, 
+        day: currentDay, add: addonsOwned, sk: skillsData.map(s => s.level), gen: generators.map(g => g.count) 
     };
-    
-    // Convert to Base64 String
-    try {
-        let json = JSON.stringify(data);
-        let code = btoa(json);
-        
-        let box = document.getElementById('save-box');
-        box.value = code;
-        box.select();
-        alert("Code generated! Copy the text in the box.");
-    } catch (e) {
-        console.error(e);
-        alert("Error generating save.");
-    }
+    document.getElementById('save-box').value = btoa(JSON.stringify(d));
+    document.getElementById('save-box').select();
 }
 
-// IMPORT LOGIC
 function processImport() {
-    let box = document.getElementById('save-box');
-    let code = box.value.trim();
-    
-    if (!code) {
-        alert("Paste a save code first!");
-        return;
-    }
-    
     try {
-        let json = atob(code);
-        let data = JSON.parse(json);
-        
-        // Restore Variables
-        playerName = data.name || "Anonymous";
-        isotopes = data.iso || 0;
-        lifetimeIsotopes = data.liso || 0;
-        totalSeconds = data.time || 0;
-        ascensions = data.asc || 0;
-        celestialPower = data.pwr || 1.0;
-        currentDay = data.day || 1;
-        addonsOwned = data.add || 0;
-        
-        // Restore Skills
-        if (data.sk && Array.isArray(data.sk)) {
-            data.sk.forEach((lvl, index) => {
-                if (skillsData[index]) skillsData[index].level = lvl;
-            });
-        }
-        
-        // Refresh Everything
+        let d = JSON.parse(atob(document.getElementById('save-box').value));
+        playerName = d.n; isotopes = d.i; lifetimeIsotopes = d.li; totalSeconds = d.t; ascensions = d.a; celestialPower = d.p; currentDay = d.day; addonsOwned = d.add;
+        d.sk.forEach((l, i) => skillsData[i].level = l);
+        d.gen.forEach((c, i) => generators[i].count = c);
         document.getElementById('stat-name').innerText = playerName;
         document.getElementById('login-screen').style.display = 'none';
-        
-        startAutomation();
-        startTimers();
-        updateWorldVisuals();
-        updateUI();
-        toggleSaveMenu();
-        
-        alert("Welcome back, " + playerName);
-        
-    } catch (e) {
-        console.error(e);
-        alert("Invalid Save Code. Please try again.");
-    }
+        document.getElementById('galaxy-screen').style.display = 'none';
+        startEngine(); updateUI(); toggleSaveMenu();
+    } catch(e) { alert("Invalid Code"); }
 }
