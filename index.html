@@ -3,58 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator 6.6: Sovereign</title>
+    <title>God Simulator 6.8: Overlord</title>
     <style>
         body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
         #resource-bar { background: #1a1a2e; padding: 15px; display: flex; justify-content: space-around; border-bottom: 2px solid #ed1e79; position: sticky; top: 0; z-index: 1000; }
         #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
-        #grid-container { position: relative; width: fit-content; margin: 30px auto; transition: transform 0.1s; }
+        #grid-container { position: relative; width: fit-content; margin: 20px auto; }
         #grid-9x9 { display: grid; grid-template-columns: repeat(9, 30px); gap: 2px; border: 2px solid #333; padding: 5px; background: #000; }
         .tile { width: 30px; height: 30px; background: #1a1a1a; border-radius: 2px; transition: 0.8s; }
         
-        /* THEME COLORS */
-        :root { --ocean-color: #0984e3; --land-color: #00b894; }
-        .stage-ocean { background: var(--ocean-color) !important; box-shadow: inset 0 0 5px rgba(255,255,255,0.2); }
-        .stage-flowers { background: var(--land-color) !important; }
+        /* RANK STYLE */
+        #god-rank { color: #ed1e79; font-weight: bold; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+        
+        /* TILE STAGES */
         .stage-rock { background: #636e72 !important; } 
         .stage-red { background: #c0392b !important; } 
+        .stage-ocean { background: #0984e3 !important; }
+        .stage-flowers { background: #00b894 !important; }
         .stage-city { background: #f1c40f !important; box-shadow: 0 0 8px gold; }
 
-        /* PULSE EFFECT */
-        .pulse { transform: scale(1.02); filter: brightness(1.2); }
+        /* DEBUG MENU - ANCHORED */
+        #debug-menu { 
+            position: fixed; right: 10px; top: 120px; width: 140px; background: rgba(0,0,0,0.95); 
+            border: 1px solid lime; padding: 10px; display: none; z-index: 9999; 
+            box-shadow: 0 0 15px lime; font-family: monospace; font-size: 10px; text-align: left;
+        }
+        .debug-btn { background: #111; color: lime; border: 1px solid lime; width: 100%; margin: 3px 0; cursor: pointer; padding: 5px; }
 
-        /* DEBUG MENU */
-        #debug-menu { position: fixed; right: 10px; top: 100px; width: 140px; background: rgba(0,0,0,0.9); border: 1px solid lime; padding: 10px; display: none; z-index: 9999; box-shadow: 0 0 10px lime; font-family: monospace; font-size: 10px; text-align: left; }
-        .debug-btn { background: #222; color: lime; border: 1px solid lime; width: 100%; margin: 2px 0; cursor: pointer; padding: 5px; }
+        /* ACHIEVEMENTS */
+        .ach-row { display: flex; align-items: center; background: #111; margin: 8px auto; padding: 10px; border-radius: 5px; width: 90%; border: 1px solid #333; transition: 0.3s; }
+        .ach-row.unlocked { border-color: gold; background: linear-gradient(90deg, #1a1a00, #000); }
+        .ach-icon { font-size: 20px; margin-right: 15px; opacity: 0.2; }
+        .unlocked .ach-icon { opacity: 1; }
 
         /* BOSS */
-        #boss { position: absolute; width: 100px; height: 100px; background: radial-gradient(circle, #ff0000, #000); border-radius: 50%; top: -150px; left: 50%; transform: translateX(-50%); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; border: 2px solid white; box-shadow: 0 0 30px red; }
+        #boss { position: absolute; width: 100px; height: 100px; background: radial-gradient(circle, #ff0000, #000); border-radius: 50%; top: -150px; left: 50%; transform: translateX(-50%); z-index: 100; display: none; flex-direction: column; justify-content: center; align-items: center; border: 2px solid white; box-shadow: 0 0 30px red; pointer-events: auto; }
         #boss-hp { width: 80%; height: 6px; background: #333; border: 1px solid white; }
         
-        .upgrade-card { background: #161b33; padding: 10px; margin: 8px auto; border: 1px solid #444; border-radius: 8px; width: 85%; max-width: 400px; }
+        .upgrade-card { background: #161b33; padding: 12px; margin: 10px auto; border: 1px solid #444; border-radius: 8px; width: 85%; max-width: 400px; }
         button { cursor: pointer; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; color: white; background: #ed1e79; }
         .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 4000; flex-direction: column; }
-        .color-dot { width: 20px; height: 20px; display: inline-block; border-radius: 50%; margin: 5px; cursor: pointer; border: 2px solid white; }
-        #planet-title { font-style: italic; color: #aaa; margin-bottom: 10px; }
     </style>
 </head>
 <body onload="checkSave()">
 
     <div id="login-screen" class="full-overlay">
         <div style="border: 2px solid #ed1e79; padding: 30px; border-radius: 15px; background: #111;">
-            <h1>GOD SIMULATOR 6.6</h1>
-            <input type="text" id="god-name" placeholder="Divine Name...">
-            <button onclick="login()">Enter Universe</button>
-            <p id="save-status" style="font-size:12px; color:gray; margin-top:10px;">Checking scrolls...</p>
+            <h1 style="margin:0;">GOD SIMULATOR</h1>
+            <p style="color:#ed1e79; font-size:12px; margin-bottom:20px;">VERSION 6.8 OVERLORD</p>
+            <input type="text" id="god-name" placeholder="Divine Name..." style="padding:10px; width:200px; border-radius:5px; border:none;">
+            <br><br>
+            <button onclick="login()">ENTER THE VOID</button>
         </div>
     </div>
 
     <div id="debug-menu">
-        <div style="color: lime; font-weight: bold;">🔧 INFINITY MODE</div>
-        <button class="debug-btn" onclick="isotopes += 10000000; updateUI();">+10M Iso</button>
+        <div style="color: lime; font-weight: bold; border-bottom: 1px solid lime; margin-bottom: 5px;">🔧 CONSOLE</div>
+        <button class="debug-btn" onclick="isotopes += 10000000; updateUI();">+10M Isotopes</button>
         <button class="debug-btn" onclick="faith += 500; updateUI();">+500 Faith</button>
-        <button class="debug-btn" onclick="spawnBoss()">Force Boss</button>
-        <button class="debug-btn" onclick="localStorage.clear(); location.reload();" style="color:red;">WIPE SAVE</button>
+        <button class="debug-btn" onclick="spawnBoss()">Force Star Eater</button>
+        <button class="debug-btn" onclick="unlockAllAch()">Unlock All Ach</button>
+        <button class="debug-btn" onclick="localStorage.clear(); location.reload();" style="color:red; border-color:red;">WIPE ALL DATA</button>
     </div>
 
     <div id="resource-bar">
@@ -65,13 +74,13 @@
     <nav id="main-nav">
         <button onclick="showScreen('play-screen')">World</button>
         <button onclick="showScreen('skill-screen')">Skills</button>
-        <button onclick="showScreen('faith-screen')" style="color:#00f2ff;">Ascension</button>
-        <button onclick="showScreen('stat-screen')">Stats</button>
+        <button onclick="showScreen('stat-screen')">Records</button>
     </nav>
 
     <main>
         <section id="play-screen" class="screen">
-            <h3 id="planet-title">Unnamed Planet</h3>
+            <div id="god-rank">Celestial Spark</div>
+            <h3 id="planet-display" style="margin:5px 0;">Fragmented Core</h3>
             <div id="grid-container">
                 <div id="boss" onclick="attackBoss()">
                     <b style="font-size: 10px;">STAR EATER</b>
@@ -79,40 +88,20 @@
                 </div>
                 <div id="grid-9x9"></div>
             </div>
-            <button id="adv-btn" onclick="advanceDay()" style="padding: 15px 40px; font-size: 1.2rem; box-shadow: 0 4px #ad1457;">Advance Day</button>
+            <button onclick="advanceDay()" style="padding: 15px 40px; font-size: 1.1rem; border-bottom: 4px solid #ad1457;">Advance Day</button>
             <p id="day-text">Day 1 / 20</p>
-            
-            <div id="naming-div" style="display:none; margin-top: 20px;">
-                <input type="text" id="new-planet-name" placeholder="New Planet Name..." style="padding: 5px;">
-                <button onclick="renamePlanet()" style="background:gold; color:black; padding: 5px;">Rename</button>
-            </div>
         </section>
 
         <section id="skill-screen" class="screen" style="display:none;"><div id="skills-container"></div></section>
 
-        <section id="faith-screen" class="screen" style="display:none;">
-            <h2 style="color:#00f2ff;">The Divine Altar</h2>
-            <div class="upgrade-card" style="border: 2px solid #00f2ff;">
-                <p>Pending Faith: <b id="pending-faith" style="color:#00f2ff;">0</b></p>
-                <button onclick="executeRebirth()" style="background:#00f2ff; color:black;">REBIRTH</button>
-            </div>
-            <div class="upgrade-card">
-                <h3>Aesthetics</h3>
-                <p>Ocean Color:</p>
-                <div class="color-dot" style="background:#0984e3;" onclick="setTheme('--ocean-color', '#0984e3')"></div>
-                <div class="color-dot" style="background:#6c5ce7;" onclick="setTheme('--ocean-color', '#6c5ce7')"></div>
-                <div class="color-dot" style="background:#00cec9;" onclick="setTheme('--ocean-color', '#00cec9')"></div>
-                <div class="color-dot" style="background:#d63031;" onclick="setTheme('--ocean-color', '#d63031')"></div>
-            </div>
-            <div id="faith-shop-container"></div>
-        </section>
-
         <section id="stat-screen" class="screen" style="display:none;">
             <h2>Statistics</h2>
             <div class="upgrade-card">
-                <p>Total Clicks: <b id="stat-clicks">0</b></p>
+                <p>Divine Clicks: <b id="stat-clicks">0</b></p>
                 <p>Bosses Slain: <b id="stat-kills">0</b></p>
             </div>
+            <h3>Achievements</h3>
+            <div id="ach-list"></div>
         </section>
     </main>
 
@@ -128,31 +117,23 @@
             { id: 7, name: "MegaCities", level: 0, base: 1000000, req: 6 }
         ];
 
-        let faithUpgrades = [
-            { id: 0, name: "Holy Magnet", desc: "Permanent 2x Isotopes", cost: 5, owned: false },
-            { id: 1, name: "Auto-Genesis", desc: "Day advances every 3s", cost: 10, owned: false },
-            { id: 2, name: "Divine Focus", desc: "Each click advances 2 days", cost: 15, owned: false }
+        let achievements = [
+            { id: 0, name: "The First Tap", desc: "Click 100 times", goal: 100, type: "clk", unlocked: false, icon: "🖱️" },
+            { id: 1, name: "Isotope Tycoon", desc: "Collect 1M Isotopes", goal: 1000000, type: "iso", unlocked: false, icon: "💎" },
+            { id: 2, name: "Slayer of Stars", desc: "Kill 1 Star Eater", goal: 1, type: "kil", unlocked: false, icon: "⚔️" },
+            { id: 3, name: "World Architect", desc: "Unlock MegaCities", goal: 1, type: "city", unlocked: false, icon: "🏙️" }
         ];
 
-        let isotopes = 0, faith = 0, currentDay = 1, clicks = 0, bossKills = 0, planetName = "Unnamed Planet";
+        let isotopes = 0, faith = 0, currentDay = 1, clicks = 0, kills = 0;
         let bossActive = false, bossHP = 100, bossPos = -150;
 
         function login() {
             let name = document.getElementById('god-name').value;
-            let saved = localStorage.getItem('godSimSave_v66');
-            if(saved) {
-                let d = JSON.parse(saved);
-                isotopes = d.iso || 0; faith = d.fth || 0; clicks = d.clk || 0; bossKills = d.kil || 0;
-                planetName = d.pName || "Unnamed Planet";
-                if(d.sk) d.sk.forEach((lvl, i) => skillsData[i].level = lvl);
-                if(d.fup) d.fup.forEach((owned, i) => faithUpgrades[i].owned = owned);
-            }
-            if(name === "Infinity") document.getElementById('debug-menu').style.display = 'block';
+            if(name.toLowerCase() === "infinity") document.getElementById('debug-menu').style.display = 'block';
             document.getElementById('login-screen').style.display = 'none';
-            document.getElementById('planet-title').innerText = planetName;
-            createGrid(); updateUI(); 
-            setInterval(saveGame, 5000); 
-            setInterval(() => { if(faithUpgrades[1].owned) advanceDay(true); }, 3000);
+            createGrid(); 
+            updateUI();
+            setInterval(saveGame, 5000);
         }
 
         function createGrid() {
@@ -161,28 +142,15 @@
             updateWorldVisuals();
         }
 
-        function setTheme(variable, color) { document.documentElement.style.setProperty(variable, color); }
-
-        function renamePlanet() {
-            let n = document.getElementById('new-planet-name').value;
-            if(n) { planetName = n; document.getElementById('planet-title').innerText = n; saveGame(); }
-        }
-
-        function advanceDay(isAuto = false) {
-            if(!isAuto) {
-                clicks++; currentDay += (faithUpgrades[2].owned ? 2 : 1);
-                let container = document.getElementById('grid-container');
-                container.classList.add('pulse');
-                setTimeout(() => container.classList.remove('pulse'), 100);
-            } else { currentDay++; }
-
-            if (currentDay >= 20) {
+        function advanceDay() {
+            clicks++;
+            checkAchievements();
+            if (currentDay < 20) currentDay++; 
+            else {
                 currentDay = 1;
-                let mult = faithUpgrades[0].owned ? 2 : 1;
-                isotopes += (100 + (skillsData.reduce((a,b)=>a+b.level,0) * 50)) * mult;
+                isotopes += (100 + (skillsData.reduce((a,b)=>a+b.level,0) * 50));
                 if(skillsData[7].level > 0 && !bossActive && Math.random() < 0.3) spawnBoss();
             }
-            document.getElementById('day-text').innerText = `Day ${currentDay} / 20`;
             updateUI();
         }
 
@@ -192,7 +160,7 @@
             let t = setInterval(() => {
                 if(!bossActive) { clearInterval(t); return; }
                 bossPos += 5; document.getElementById('boss').style.top = bossPos + "px";
-                if(bossPos > 50) { alert("YOUR PLANET WAS DEVOURED!"); localStorage.clear(); location.reload(); }
+                if(bossPos > 50) { alert("PLANET CONSUMED."); localStorage.clear(); location.reload(); }
             }, 1000);
         }
 
@@ -200,37 +168,39 @@
             if(isotopes >= 5000) { 
                 isotopes -= 5000; bossHP -= 20; 
                 document.getElementById('hp-fill').style.width = bossHP + "%"; 
-                if(bossHP <= 0) { bossActive = false; document.getElementById('boss').style.display = 'none'; faith += 50; bossKills++; } 
+                if(bossHP <= 0) { bossActive = false; document.getElementById('boss').style.display = 'none'; faith += 50; kills++; checkAchievements(); }
                 updateUI(); 
             }
         }
 
-        function executeRebirth() {
-            let p = Math.floor(Math.sqrt(isotopes / 500));
-            if(p < 1) return alert("Not enough power to ascend.");
-            if(confirm(`Ascend for ${p} Faith?`)){
-                faith += p; isotopes = 0; currentDay = 1;
-                skillsData.forEach(s => s.level = 0);
-                updateWorldVisuals(); updateUI(); showScreen('play-screen');
-            }
+        function checkAchievements() {
+            achievements.forEach(a => {
+                if(!a.unlocked) {
+                    if(a.type === "clk" && clicks >= a.goal) a.unlocked = true;
+                    if(a.type === "iso" && isotopes >= a.goal) a.unlocked = true;
+                    if(a.type === "kil" && kills >= a.goal) a.unlocked = true;
+                    if(a.type === "city" && skillsData[7].level > 0) a.unlocked = true;
+                }
+            });
+            updateRank();
         }
 
-        function buyFaith(id) {
-            let u = faithUpgrades[id];
-            if(faith >= u.cost && !u.owned) { faith -= u.cost; u.owned = true; updateUI(); }
+        function updateRank() {
+            let count = achievements.filter(a => a.unlocked).length;
+            let rank = "Celestial Spark";
+            if(count >= 1) rank = "Planetary Weaver";
+            if(count >= 2) rank = "Solar Warden";
+            if(count >= 3) rank = "Galaxy Guardian";
+            if(count >= 4) rank = "Universal Overlord";
+            document.getElementById('god-rank').innerText = rank;
         }
-
-        function saveGame() {
-            let data = { iso: isotopes, fth: faith, clk: clicks, kil: bossKills, sk: skillsData.map(s=>s.level), fup: faithUpgrades.map(u=>u.owned), pName: planetName };
-            localStorage.setItem('godSimSave_v66', JSON.stringify(data));
-        }
-
-        function checkSave() { if(localStorage.getItem('godSimSave_v66')) document.getElementById('save-status').innerText = "World Save Found!"; }
 
         function buySkill(id) {
             let s = skillsData[id], cost = Math.floor(s.base * Math.pow(2.2, s.level));
-            if (isotopes >= cost) { isotopes -= cost; s.level++; updateWorldVisuals(); updateUI(); }
+            if (isotopes >= cost) { isotopes -= cost; s.level++; updateWorldVisuals(); updateUI(); checkAchievements(); }
         }
+
+        function unlockAllAch() { achievements.forEach(a => a.unlocked = true); updateUI(); updateRank(); }
 
         function updateWorldVisuals() {
             for(let i=0; i<81; i++) {
@@ -242,28 +212,48 @@
                 else if (i < skillsData[1].level * 15) t.classList.add('stage-red');
                 else if (i < skillsData[0].level * 20) t.classList.add('stage-rock');
             }
-            if(skillsData[7].level > 0) document.getElementById('naming-div').style.display = 'block';
         }
 
         function updateUI() {
             document.getElementById('isotope-count').innerText = Math.floor(isotopes).toLocaleString();
             document.getElementById('faith-count').innerText = faith;
             document.getElementById('stat-clicks').innerText = clicks;
-            document.getElementById('stat-kills').innerText = bossKills;
-            document.getElementById('pending-faith').innerText = Math.floor(Math.sqrt(isotopes / 500));
-            const sCon = document.getElementById('skills-container'); sCon.innerHTML = "<h2>Divine Skills</h2>";
+            document.getElementById('stat-kills').innerText = kills;
+            document.getElementById('day-text').innerText = `Day ${currentDay} / 20`;
+            
+            const sCon = document.getElementById('skills-container'); sCon.innerHTML = "<h2>Skills</h2>";
             skillsData.forEach(s => {
                 let unl = s.req === -1 || skillsData[s.req].level > 0;
                 let cost = Math.floor(s.base * Math.pow(2.2, s.level));
                 sCon.innerHTML += `<div class="upgrade-card" style="opacity:${unl?1:0.3}"><b>${unl?s.name:"???"}</b> (Lv ${s.level})<br><button onclick="buySkill(${s.id})" ${isotopes<cost||!unl||s.level>=5?'disabled':''}>${cost.toLocaleString()} Iso</button></div>`;
             });
-            const fCon = document.getElementById('faith-shop-container'); fCon.innerHTML = "<h3>Faith Shop</h3>";
-            faithUpgrades.forEach(u => {
-                fCon.innerHTML += `<div class="upgrade-card" style="border-color:#00f2ff"><b>${u.name}</b><br><small>${u.desc}</small><br><button onclick="buyFaith(${u.id})" ${faith<u.cost||u.owned?'disabled':''}>${u.owned?'OWNED':u.cost+' FP'}</button></div>`;
+
+            const aCon = document.getElementById('ach-list'); aCon.innerHTML = "";
+            achievements.forEach(a => {
+                aCon.innerHTML += `<div class="ach-row ${a.unlocked?'unlocked':''}">
+                    <div class="ach-icon">${a.icon}</div>
+                    <div style="text-align:left"><b>${a.unlocked?a.name:'Locked Achievement'}</b><br><small>${a.desc}</small></div>
+                </div>`;
             });
+        }
+
+        function saveGame() {
+            let data = { iso: isotopes, fth: faith, clk: clicks, kil: kills, sk: skillsData.map(s=>s.level), ach: achievements.map(a=>a.unlocked) };
+            localStorage.setItem('godSim_v68', JSON.stringify(data));
+        }
+
+        function checkSave() {
+            let s = localStorage.getItem('godSim_v68');
+            if(s) {
+                let d = JSON.parse(s);
+                isotopes = d.iso; faith = d.fth; clicks = d.clk; kills = d.kil;
+                d.sk.forEach((l, i) => skillsData[i].level = l);
+                d.ach.forEach((u, i) => achievements[i].unlocked = u);
+                updateRank();
+            }
         }
 
         function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.style.display = 'none'); document.getElementById(id).style.display = 'block'; }
     </script>
 </body>
-                </html>
+    </html>
