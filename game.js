@@ -10,6 +10,7 @@ var planets = {
 };
 var currentPlanet = planets.terran;
 
+// INITIALIZATION
 function checkIdentity() {
     let input = document.getElementById('god-input').value.trim();
     if (input) {
@@ -19,6 +20,20 @@ function checkIdentity() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('galaxy-screen').style.display = 'flex';
         initPlanetOptions();
+    }
+}
+
+function attemptAutoLoad() {
+    if(loadGame()) {
+        document.getElementById('stat-name').innerText = playerName;
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('galaxy-screen').style.display = 'none';
+        document.getElementById('world-title').innerText = "RESTORED PLANET"; 
+        startLoops(); 
+        updateWorldVisuals(); 
+        updateUI();
+    } else {
+        alert("No Save Found.");
     }
 }
 
@@ -38,6 +53,14 @@ function selectPlanet(k) {
     createGrid(); startLoops();
 }
 
+// MAIN LOOP
+function startLoops() {
+    setInterval(() => { totalSeconds++; updateUI(); }, 1000); 
+    setInterval(() => { for(let i=0; i<addonsOwned; i++) advanceDay(true); }, 1000); 
+    setInterval(() => { saveGame(); }, 10000); // AUTO SAVE every 10s
+    runCycle();
+}
+
 function runCycle() {
     if (cycleInterval) clearInterval(cycleInterval);
     cycleInterval = setInterval(() => {
@@ -45,32 +68,15 @@ function runCycle() {
         if (celestialDrives > 0) {
             let bonus = 10000 * celestialDrives * celestialPower;
             isotopes += bonus; lifetimeIsotopes += bonus;
-            document.getElementById('news-ticker').innerText = "✨ CYCLE BONUS: +" + bonus;
+            document.getElementById('news-ticker').innerText = "✨ CYCLE BONUS: +" + bonus.toLocaleString();
         }
         updateUI();
     }, currentCycleSpeed);
 }
 
-function startLoops() {
-    setInterval(() => { totalSeconds++; updateUI(); }, 1000);
-    setInterval(() => { for(let i=0; i<addonsOwned; i++) advanceDay(true); }, 1000);
-    runCycle();
-}
-
 function createGrid() {
     const grid = document.getElementById('grid-9x9'); grid.innerHTML = "";
     for (let i = 0; i < 81; i++) grid.innerHTML += '<div class="tile"></div>';
-}
-
-function updatePower() {
-    let solar = (isDay ? generators[1].count * 8 * currentPlanet.sol : 0);
-    let lunar = (!isDay ? moonBases * 40 : 0);
-    pSupply = (generators[0].count * 2) + solar + (generators[2].count * 6 * currentPlanet.wind) + (generators[3].count * 50) + lunar;
-    pDemand = skillsData.reduce((a, b) => a + (b.level * 4), 0);
-    let ds = batteryActive ? pDemand : pSupply;
-    document.getElementById('power-val').innerText = `${Math.floor(ds)}/${pDemand}`;
-    document.getElementById('power-fill').style.width = Math.min(100, (ds/(pDemand+1))*100) + "%";
-    document.getElementById('cycle-text').innerText = isDay ? "☀️ DAY" : "🌙 NIGHT";
 }
 
 function advanceDay(isAuto) {
@@ -84,6 +90,58 @@ function advanceDay(isAuto) {
         isotopes += rew; lifetimeIsotopes += rew; currentDay = 1; updateWorldVisuals();
     }
     updateUI();
+}
+
+// UI RENDERING (MOVED HERE TO FIX BUGS)
+function refreshMenus() {
+    // Skills
+    const sCon = document.getElementById('skills-container');
+    if(sCon) {
+        let sHTML = "<h3>Restoration</h3>";
+        skillsData.forEach(s => {
+            let open = s.req === -1 || skillsData[s.req].level > 0;
+            let cost = Math.floor(s.base * Math.pow(2.2, s.level));
+            sHTML += `<div class="upgrade-card" style="opacity:${open?1:0.4}">
+                <b>${open?s.name:'Locked'}</b> [Lv ${s.level}/5]<br>
+                <button onclick="buySkill(${s.id})" ${isotopes<cost||s.level>=5||!open?'disabled':''}>${s.level>=5?'MAX':cost.toLocaleString()}</button></div>`;
+        });
+        sCon.innerHTML = sHTML;
+    }
+
+    // Power
+    const gCon = document.getElementById('generators-container');
+    if(gCon) {
+        let gHTML = "<h3>Power Grid</h3>";
+        generators.forEach(g => {
+            let cost = Math.floor(g.base * Math.pow(1.6, g.count));
+            gHTML += `<div class="upgrade-card"><b>${g.name}</b> (Qty: ${g.count})<br>
+                <button onclick="buyGen(${g.id})" ${isotopes<cost?'disabled':''}>${cost.toLocaleString()}</button></div>`;
+        });
+        gCon.innerHTML = gHTML;
+    }
+
+    // Automation
+    const aCon = document.getElementById('addons-list');
+    if(aCon) {
+        let dCost = Math.pow(10, addonsOwned + 1);
+        let cCost = 50000 * Math.pow(4, celestialDrives);
+        let mCost = 15000 * Math.pow(2.5, moonBases);
+        aCon.innerHTML = `<h3>Universal Automation</h3>
+            <div class="upgrade-card"><b>Drones</b> [${addonsOwned}/10]<br><button onclick="buyAddon()" ${isotopes<dCost||addonsOwned>=10?'disabled':''}>${dCost.toLocaleString()}</button></div>
+            <div class="upgrade-card"><b>Celestial Drive</b> [${celestialDrives}/5]<br><button onclick="buyCelestialDrive()" ${isotopes<cCost||celestialDrives>=5?'disabled':''}>${cCost.toLocaleString()}</button></div>
+            <div class="upgrade-card"><b>Moon Base</b> [${moonBases}]<br><button onclick="buyMoonBase()" ${isotopes<mCost?'disabled':''}>${mCost.toLocaleString()}</button></div>`;
+    }
+}
+
+function updatePower() {
+    let solar = (isDay ? generators[1].count * 8 * currentPlanet.sol : 0);
+    let lunar = (!isDay ? moonBases * 40 : 0);
+    pSupply = (generators[0].count * 2) + solar + (generators[2].count * 6 * currentPlanet.wind) + (generators[3].count * 50) + lunar;
+    pDemand = skillsData.reduce((a, b) => a + (b.level * 4), 0);
+    let ds = batteryActive ? pDemand : pSupply;
+    document.getElementById('power-val').innerText = `${Math.floor(ds)}/${pDemand}`;
+    document.getElementById('power-fill').style.width = Math.min(100, (ds/(pDemand+1))*100) + "%";
+    document.getElementById('cycle-text').innerText = isDay ? "☀️ DAY" : "🌙 NIGHT";
 }
 
 function updateWorldVisuals() {
@@ -138,7 +196,7 @@ function debugWarpSpeed() { currentCycleSpeed = 1000; runCycle(); }
 function toggleDebug() { let m = document.getElementById('debug-menu'); m.style.display = m.style.display==='none'?'block':'none'; }
 function showScreen(id) { document.querySelectorAll('.screen').forEach(s=>s.style.display='none'); document.getElementById(id).style.display='block'; }
 
-// BUY FUNCTIONS
+// PURCHASES
 function buySkill(id) { let s = skillsData[id]; let cost = Math.floor(s.base * Math.pow(2.2, s.level)); if(isotopes>=cost){isotopes-=cost; s.level++; updateWorldVisuals(); updateUI();} }
 function buyGen(id) { let g = generators[id]; let cost = Math.floor(g.base * Math.pow(1.6, g.count)); if(isotopes>=cost){isotopes-=cost; g.count++; updateUI();} }
 function buyAddon() { let c = Math.pow(10, addonsOwned+1); if(isotopes>=c&&addonsOwned<10){isotopes-=c; addonsOwned++; updateUI();} }
