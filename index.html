@@ -19,19 +19,22 @@
         #day-btn { width: 120px; height: 120px; border-radius: 50%; border: 4px solid #ed1e79; background: #111; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; box-shadow: 0 0 15px #ed1e7955; }
         #day-btn:hover { background: #ed1e79; transform: scale(1.05); }
 
-        .stage-rock { background: #636e72 !important; } .stage-red { background: #c0392b !important; } 
-        .stage-ocean { background: #0984e3 !important; } .stage-flowers { background: #00b894 !important; }
+        /* Evolution Stages */
+        .stage-rock { background: #636e72 !important; } 
+        .stage-red { background: #c0392b !important; } 
+        .stage-ocean { background: #0984e3 !important; } 
+        .stage-flowers { background: #00b894 !important; }
         .stage-city { background: #f1c40f !important; box-shadow: 0 0 8px gold; }
 
-        .planet-btn { background: #222; border: 1px solid #444; color: #aaa; padding: 5px 12px; margin: 0 3px; border-radius: 20px; font-size: 11px; }
+        .planet-btn { background: #222; border: 1px solid #444; color: #aaa; padding: 5px 12px; margin: 0 3px; border-radius: 20px; font-size: 11px; cursor: pointer; }
         .active-planet { border-color: #ed1e79; color: white; background: #ed1e7922; }
 
-        .upgrade-card { background: #161b33; padding: 12px; margin: 10px auto; border: 1px solid #444; border-radius: 8px; width: 85%; max-width: 400px; }
+        .upgrade-card { background: #161b33; padding: 12px; margin: 10px auto; border: 1px solid #444; border-radius: 8px; width: 85%; max-width: 400px; text-align: left; }
         
-        /* DATA ARCHIVE STYLING */
         #save-code-box { width: 90%; background: #000; color: lime; border: 1px solid lime; font-family: monospace; padding: 10px; font-size: 10px; height: 60px; word-break: break-all; margin-top: 10px; }
 
         .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 4000; flex-direction: column; }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
     </style>
 </head>
 <body onload="checkSave()">
@@ -40,7 +43,8 @@
         <div style="border: 2px solid #ed1e79; padding: 30px; border-radius: 15px; background: #111;">
             <h1>GOD SIMULATOR 8.6</h1>
             <input type="text" id="god-name" placeholder="Name your God...">
-            <br><br><button onclick="login()" style="background:#ed1e79; color:white; padding:10px 20px; border:none; cursor:pointer;">AWAKEN</button>
+            <br><br>
+            <button onclick="login()" style="background:#ed1e79; color:white; padding:10px 20px; border:none; cursor:pointer; font-weight:bold;">AWAKEN</button>
         </div>
     </div>
 
@@ -53,7 +57,7 @@
         <button onclick="showScreen('play-screen')" style="background:none; color:white; cursor:pointer; border:none;">Universe</button>
         <button onclick="showScreen('skill-screen')" style="background:none; color:white; cursor:pointer; border:none;">Creation</button>
         <button onclick="showScreen('faith-screen')" style="background:none; color:#00f2ff; cursor:pointer; border:none;">Altar</button>
-        <button onclick="showScreen('stat-screen')" style="background:none; color:gold; cursor:pointer; border:none;">Pantheon</button>
+        <button onclick="showScreen('stat-screen')" style="background:none; color:gold; cursor:pointer; border:none;">Archives</button>
     </nav>
 
     <main>
@@ -71,15 +75,17 @@
                     <p id="day-text" style="font-size: 12px; color: #888; margin:0;">Day 1 / 20</p>
                 </div>
             </div>
-            <div style="margin: 15px auto; width: 320px; background: #000;">
-                <div id="container-900a963ba8053c59fa04ff02450d4e12"></div>
-                <script async="async" data-cfasync="false" src="https://pl28773503.effectivegatecpm.com/900a963ba8053c59fa04ff02450d4e12/invoke.js"></script>
-            </div>
         </section>
 
-        <section id="skill-screen" class="screen" style="display:none;"><div id="skills-container"></div></section>
+        <section id="skill-screen" class="screen" style="display:none;">
+            <div id="skills-container"></div>
+        </section>
         
-        <section id="faith-screen" class="screen" style="display:none;"><h2 style="color:#00f2ff;">The Altar</h2></section>
+        <section id="faith-screen" class="screen" style="display:none;">
+            <h2 style="color:#00f2ff;">The Altar</h2>
+            <p>Faith is gained by reaching higher civilization tiers.</p>
+            <div class="upgrade-card">Coming soon in v8.7: Divine Miracles</div>
+        </section>
 
         <section id="stat-screen" class="screen" style="display:none;">
             <h2 style="color:gold;">Divine Archives</h2>
@@ -87,65 +93,161 @@
                 <b>Migration Code</b><br>
                 <textarea id="save-code-box" placeholder="Paste code here to import..."></textarea>
                 <br><br>
-                <button onclick="exportSave()" style="background:#444; color:white; padding:5px; font-size:12px;">Copy Export Code</button>
-                <button onclick="importSave()" style="background:gold; color:black; padding:5px; font-size:12px; font-weight:bold;">Import Progress</button>
+                <button onclick="exportSave()" style="background:#444; color:white; padding:5px; font-size:12px; border:none; cursor:pointer;">Copy Export Code</button>
+                <button onclick="importSave()" style="background:gold; color:black; padding:5px; font-size:12px; font-weight:bold; border:none; cursor:pointer;">Import Progress</button>
             </div>
-            <p style="font-size:10px; color:#555;">Export your code to save progress outside of this browser.</p>
         </section>
     </main>
 
     <script>
         let isotopes = 0, faith = 0, currentDay = 1, activePlanet = 0;
         let planetLevels = [[0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]];
-        const skillsData = [{id:0,name:"Tectonics",base:50},{id:1,name:"Atmosphere",base:250},{id:2,name:"Ozone",base:1000},{id:3,name:"Hydration",base:4000},{id:4,name:"Biosphere",base:15000},{id:5,name:"Flora",base:60000},{id:6,name:"Civilization",base:250000},{id:7,name:"MegaCities",base:1000000}];
-
-        function login() { document.getElementById('login-screen').style.display='none'; createGrid(); updateUI(); }
         
+        const skillsData = [
+            {id:0, name:"Tectonics", base:50},
+            {id:1, name:"Atmosphere", base:250},
+            {id:2, name:"Ozone", base:1000},
+            {id:3, name:"Hydration", base:4000},
+            {id:4, name:"Biosphere", base:15000},
+            {id:5, name:"Flora", base:60000},
+            {id:6, name:"Civilization", base:250000},
+            {id:7, name:"MegaCities", base:1000000}
+        ];
+
+        function login() { 
+            document.getElementById('login-screen').style.display='none'; 
+            createGrid(); 
+            updateUI(); 
+        }
+
+        function showScreen(id) {
+            document.querySelectorAll('.screen').forEach(s => s.style.display = 'none');
+            document.getElementById(id).style.display = 'block';
+            updateUI();
+        }
+
         function saveGame() {
             let data = { iso: isotopes, fth: faith, pL: planetLevels, day: currentDay };
             localStorage.setItem('godSim_v86', JSON.stringify(data));
             const bar = document.getElementById('resource-bar');
-            bar.classList.add('saving'); setTimeout(() => bar.classList.remove('saving'), 500);
-        }
-
-        function exportSave() {
-            saveGame();
-            let raw = localStorage.getItem('godSim_v86');
-            let code = btoa(raw); // Encode to Base64
-            document.getElementById('save-code-box').value = code;
-            navigator.clipboard.writeText(code);
-            alert("Divine Code copied to clipboard!");
-        }
-
-        function importSave() {
-            let code = document.getElementById('save-code-box').value;
-            if(!code) return alert("Please paste a code!");
-            try {
-                let decoded = atob(code);
-                let parsed = JSON.parse(decoded);
-                if(confirm("Overwrite current world with this code?")) {
-                    localStorage.setItem('godSim_v86', decoded);
-                    location.reload();
-                }
-            } catch(e) { alert("Invalid Divine Code!"); }
+            bar.classList.add('saving'); 
+            setTimeout(() => bar.classList.remove('saving'), 500);
         }
 
         function checkSave() {
             let s = localStorage.getItem('godSim_v86');
-            if(s) { let d=JSON.parse(s); isotopes=d.iso||0; faith=d.fth||0; planetLevels=d.pL||planetLevels; currentDay=d.day||1; updateUI(); }
+            if(s) { 
+                let d = JSON.parse(s); 
+                isotopes = d.iso || 0; 
+                faith = d.fth || 0; 
+                planetLevels = d.pL || planetLevels; 
+                currentDay = d.day || 1; 
+            }
         }
 
-        function createGrid() { const grid = document.getElementById('grid-9x9'); grid.innerHTML = ""; for (let i = 0; i < 81; i++) { let d = document.createElement('div'); d.className = 'tile'; d.id = 'tile-' + i; grid.appendChild(d); } updateWorldVisuals(); }
-        function switchPlanet(id) { activePlanet = id; updateWorldVisuals(); updateUI(); saveGame(); }
-        function advanceDay() { if (currentDay < 20) currentDay++; else { currentDay = 1; isotopes += (100 + (planetLevels[activePlanet].reduce((a,b)=>a+b, 0) * 50)); } updateUI(); if(currentDay%5===0)saveGame(); }
-        function buySkill(id) { let lvl = planetLevels[activePlanet][id]; let cost = Math.floor(skillsData[id].base * Math.pow(2.2, lvl)); if(isotopes >= cost && lvl < 10) { isotopes -= cost; planetLevels[activePlanet][id]++; updateWorldVisuals(); updateUI(); saveGame(); } }
-        
+        function createGrid() { 
+            const grid = document.getElementById('grid-9x9'); 
+            grid.innerHTML = ""; 
+            for (let i = 0; i < 81; i++) { 
+                let d = document.createElement('div'); 
+                d.className = 'tile'; 
+                d.id = 'tile-' + i; 
+                grid.appendChild(d); 
+            } 
+            updateWorldVisuals(); 
+        }
+
+        function switchPlanet(id) { 
+            activePlanet = id; 
+            const buttons = document.querySelectorAll('.planet-btn');
+            buttons.forEach((btn, idx) => btn.className = (idx === id) ? 'planet-btn active-planet' : 'planet-btn');
+            updateWorldVisuals(); 
+            updateUI(); 
+            saveGame(); 
+        }
+
+        function advanceDay() { 
+            if (currentDay < 20) {
+                currentDay++; 
+            } else { 
+                currentDay = 1; 
+                let totalLvl = planetLevels[activePlanet].reduce((a,b)=>a+b, 0);
+                isotopes += (100 + (totalLvl * 75)); 
+            } 
+            updateUI(); 
+            if(currentDay % 5 === 0) saveGame(); 
+        }
+
+        function buySkill(id) { 
+            let lvl = planetLevels[activePlanet][id]; 
+            let cost = Math.floor(skillsData[id].base * Math.pow(2.2, lvl)); 
+            if(isotopes >= cost) { 
+                isotopes -= cost; 
+                planetLevels[activePlanet][id]++; 
+                updateWorldVisuals(); 
+                updateUI(); 
+                saveGame(); 
+            } 
+        }
+
+        function updateWorldVisuals() {
+            let total = planetLevels[activePlanet].reduce((a,b)=>a+b, 0);
+            for(let i=0; i<81; i++) {
+                let t = document.getElementById('tile-'+i);
+                if(!t) continue;
+                t.className = 'tile';
+                if(total > 5) t.classList.add('stage-rock');
+                if(total > 15) t.classList.add('stage-red');
+                if(total > 30) t.classList.add('stage-ocean');
+                if(total > 50) t.classList.add('stage-flowers');
+                if(total > 75) t.classList.add('stage-city');
+            }
+        }
+
         function updateUI() {
             document.getElementById('isotope-count').innerText = Math.floor(isotopes).toLocaleString();
-            document.getElementById('faith-count').innerText = faith;
+            document.getElementById('faith-count').innerText = faith.toLocaleString();
             document.getElementById('day-text').innerText = "Day " + currentDay + " / 20";
+            
             const sCon = document.getElementById('skills-container');
-            sCon.innerHTML = "<h2>Creation</h2>";
-            skillsData.forEach((s, i) => {
-                let lvl = planetLevels[activePlanet][i], cost = Math.floor(s.base * Math.pow(2.2, lvl)), unl = i === 0 || planetLevels[activePlanet][i-1] > 0;
-                s
+            if(sCon) {
+                sCon.innerHTML = "<h2 style='margin-top:20px;'>Creation Lab</h2>";
+                skillsData.forEach((s, i) => {
+                    let lvl = planetLevels[activePlanet][i];
+                    let cost = Math.floor(s.base * Math.pow(2.2, lvl));
+                    let card = document.createElement('div');
+                    card.className = 'upgrade-card';
+                    card.innerHTML = `
+                        <b>${s.name}</b> <span style="float:right; color:#ed1e79;">Lvl ${lvl}</span><br>
+                        <small style="color:#888;">Yields better climate and resources.</small><br><br>
+                        <button onclick="buySkill(${i})" 
+                                ${(isotopes < cost) ? 'disabled' : ''} 
+                                style="background:${(isotopes >= cost) ? '#ed1e79' : '#333'}; color:white; border:none; padding:8px 15px; border-radius:4px; cursor:pointer; width:100%;">
+                            UPGRADE (${cost.toLocaleString()} Iso)
+                        </button>
+                    `;
+                    sCon.appendChild(card);
+                });
+            }
+        }
+
+        function exportSave() {
+            saveGame();
+            let code = btoa(localStorage.getItem('godSim_v86'));
+            document.getElementById('save-code-box').value = code;
+            navigator.clipboard.writeText(code);
+            alert("Divine Data Copied!");
+        }
+
+        function importSave() {
+            try {
+                let code = document.getElementById('save-code-box').value;
+                let decoded = atob(code);
+                JSON.parse(decoded);
+                localStorage.setItem('godSim_v86', decoded);
+                location.reload();
+            } catch(e) { alert("Invalid Migration Code!"); }
+        }
+    </script>
+</body>
+</html>
