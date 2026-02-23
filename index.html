@@ -3,208 +3,286 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator 8.0: Multiverse</title>
+    <title>GOD CORE v1.9.0 | SATELLITE COMMAND</title>
     <style>
-        body { background: #050508; color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
-        #resource-bar { background: #1a1a2e; padding: 15px; display: flex; justify-content: space-around; border-bottom: 2px solid #ed1e79; position: sticky; top: 0; z-index: 1000; }
-        #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
-        
-        /* PLANET GRID STYLING */
-        #grid-container { position: relative; width: fit-content; margin: 20px auto; padding: 10px; border-radius: 10px; transition: 0.5s; }
-        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 30px); gap: 2px; border: 2px solid #333; padding: 5px; background: #000; }
-        .tile { width: 30px; height: 30px; background: #1a1a1a; border-radius: 2px; transition: 0.5s; }
-        
-        /* PLANET THEMES */
-        .theme-earth { background: radial-gradient(circle, #1a1a2e, #050508); }
-        .theme-mars { background: radial-gradient(circle, #2e1a1a, #080505); filter: sepia(0.5) saturate(2); }
-        .theme-crystal { background: radial-gradient(circle, #2e1a2e, #080508); filter: hue-rotate(45deg) brightness(1.2); }
+        :root { --bg: #010103; --accent: #00d2d3; --rare: #a55eea; --danger: #ff4757; --fungus: #2ecc71; }
+        body { font-family: 'Courier New', monospace; background: var(--bg); color: #fff; margin: 0; overflow: hidden; }
 
-        /* TILES */
-        .stage-rock { background: #636e72 !important; } .stage-red { background: #c0392b !important; } 
-        .stage-ocean { background: #0984e3 !important; } .stage-flowers { background: #00b894 !important; }
-        .stage-city { background: #f1c40f !important; box-shadow: 0 0 8px gold; }
+        /* Scanning Line Effect */
+        body::after {
+            content: ""; position: fixed; inset: 0; 
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+            z-index: 100; background-size: 100% 3px, 3px 100%; pointer-events: none;
+        }
 
-        .planet-btn { background: #333; margin: 5px; padding: 5px 15px; border-radius: 20px; font-size: 0.8rem; }
-        .active-planet { border: 2px solid #ed1e79; background: #111; }
+        .screen { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: var(--bg); transition: opacity 0.5s; }
+        .hidden { display: none !important; opacity: 0; }
 
-        .upgrade-card { background: #161b33; padding: 12px; margin: 10px auto; border: 1px solid #444; border-radius: 8px; width: 85%; max-width: 400px; }
-        #boss { position: absolute; width: 100px; height: 100px; background: radial-gradient(circle, #ff0000, #000); border-radius: 50%; top: -150px; left: 50%; transform: translateX(-50%); z-index: 100; display: none; border: 2px solid white; }
+        /* Grid / Satellite Map */
+        #grid-container { 
+            display: grid; grid-template-columns: repeat(3, 160px); gap: 12px; 
+            padding: 20px; border: 1px solid #222; background: rgba(0,0,0,0.8);
+        }
+        .tile { 
+            width: 160px; height: 160px; background-size: cover; background-position: center; 
+            border: 1px solid #333; position: relative; transition: 0.3s;
+        }
+        .tile.player { border: 2px solid var(--accent); box-shadow: inset 0 0 20px var(--accent); }
+        .tile.player::after { content: "🛰"; position: absolute; top: 5px; right: 5px; font-size: 0.8rem; }
         
-        button { cursor: pointer; border: none; padding: 10px 15px; border-radius: 4px; font-weight: bold; color: white; background: #ed1e79; }
-        button:disabled { background: #444 !important; opacity: 0.5; }
-        .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #000; display: flex; justify-content: center; align-items: center; z-index: 4000; flex-direction: column; }
+        .tile.rival { filter: sepia(1) hue-rotate(90deg) brightness(0.7); border: 1px solid var(--fungus); }
+        .tile.rival::after { 
+            content: "🍄"; position: absolute; inset: 0; display: flex; align-items: center; 
+            justify-content: center; font-size: 3rem; background: rgba(0,30,0,0.5); 
+        }
+
+        /* UI Elements */
+        #sidebar { width: 320px; background: #08080c; border-left: 2px solid #1a1a1f; padding: 20px; display: flex; flex-direction: column; overflow-y: auto; }
+        .node { background: #111; border: 1px solid #333; padding: 12px; margin-bottom: 10px; border-radius: 4px; }
+        .buy-btn { 
+            background: var(--accent); color: #000; border: none; padding: 10px; 
+            font-weight: bold; cursor: pointer; width: 100%; transition: 0.2s;
+        }
+        .buy-btn:hover { background: #fff; }
+        .buy-btn:disabled { background: #222; color: #555; cursor: not-allowed; }
+
+        /* Supernova / Whiteout */
+        #white-out { background: #fff; color: #000; z-index: 9999; padding: 10%; display: flex; flex-direction: column; }
+        #final-msg { font-size: 1.8rem; line-height: 1.6; font-weight: bold; white-space: pre-wrap; }
+
+        #stabilize-ui { z-index: 200; background: rgba(255,0,0,0.2); backdrop-filter: blur(5px); }
+
+        /* Ad Container Styling */
+        #ad-box { min-height: 250px; background: #000; border: 1px dashed #444; margin-top: 10px; padding: 5px; text-align: center; overflow: hidden; }
     </style>
 </head>
 <body>
 
-    <div id="login-screen" class="full-overlay">
-        <div style="border: 2px solid #ed1e79; padding: 30px; border-radius: 15px; background: #111;">
-            <h1>GOD SIMULATOR 8.0</h1>
-            <input type="text" id="god-name" placeholder="Divine Name...">
-            <br><br><button onclick="login()">AWAKEN</button>
+    <div id="menu-screen" class="screen">
+        <div style="width: 90%; max-width: 1100px; display: flex; gap: 40px;">
+            <div style="flex: 1;">
+                <h1 style="font-size: 3rem; margin: 0; color: var(--accent);">GOD_CORE</h1>
+                <p style="color: #666; margin-bottom: 20px;">v1.9.0 FINAL STABLE</p>
+                <h2 id="meta-isotopes" style="color: var(--rare); font-size: 2rem;">0 ⚛</h2>
+                <button class="buy-btn" style="padding: 20px; font-size: 1.2rem;" onclick="startGame()">INITIATE LINK</button>
+                <div id="addon-shop" style="margin-top: 30px;"></div>
+            </div>
+            <div style="flex: 1;">
+                <h3 style="border-bottom: 1px solid #333; padding-bottom: 10px;">EVOLUTION TREE</h3>
+                <div id="skill-tree"></div>
+            </div>
         </div>
     </div>
 
-    <div id="resource-bar">
-        <span>Iso: <b id="isotope-count">0</b></span>
-        <span style="color:#00f2ff;">Faith: <b id="faith-count">0</b></span>
+    <div id="game-screen" class="screen hidden">
+        <div id="stabilize-ui" class="screen hidden">
+            <button class="buy-btn" style="width: 300px; height: 100px; font-size: 1.5rem;" onclick="stabilize()">RE-SYNC SIGNAL</button>
+        </div>
+        
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+            <h2 id="era-name" style="letter-spacing: 8px; color: var(--accent);">ARCHEAN EARTH</h2>
+            <div id="grid-container"></div>
+            <div style="margin-top: 25px; display: flex; gap: 15px;">
+                <button class="buy-btn" style="width: 100px;" onclick="nav(-1)">◄ ERA</button>
+                <button class="buy-btn" style="width: 100px;" onclick="nav(1)">ERA ►</button>
+            </div>
+        </div>
+
+        <div id="sidebar">
+            <div class="node"><small style="color:var(--accent)">CHRONO_REMAINING</small><div id="ui-year" style="font-size: 2rem;">30</div></div>
+            <div class="node"><small style="color:var(--accent)">BIO_MASS</small><div id="ui-pop" style="font-size: 2rem;">0</div></div>
+            <div class="node"><small style="color:var(--accent)">DIVINE_FAITH</small><div id="ui-faith" style="font-size: 2rem;">0</div></div>
+            
+            <div id="ad-box" class="node">
+                <small style="color: #444; display: block; margin-bottom: 5px;">SPONSORED UPLINK</small>
+                <script async="async" data-cfasync="false" src="https://pl28773503.effectivegatecpm.com/900a963ba8053c59fa04ff02450d4e12/invoke.js"></script>
+                <div id="container-900a963ba8053c59fa04ff02450d4e12"></div>
+            </div>
+
+            <div id="event-log" style="flex: 1; margin-top: 15px; overflow: hidden; font-size: 0.8rem; opacity: 0.8;"></div>
+            <button class="buy-btn" style="background:var(--danger); color:#fff; height: 60px; margin-top: 10px;" onclick="smite()">PURGE BLIGHT (50 F)</button>
+        </div>
     </div>
 
-    <nav id="main-nav">
-        <button onclick="showScreen('play-screen')">Universe</button>
-        <button onclick="showScreen('skill-screen')">Skills</button>
-        <button onclick="showScreen('faith-screen')" style="color:#00f2ff;">Altar</button>
-        <button onclick="showScreen('law-nav')" id="law-nav-btn" style="display:none; color:gold;">Laws</button>
-        <button onclick="showScreen('stat-screen')">Stats</button>
-    </nav>
-
-    <main>
-        <section id="play-screen" class="screen">
-            <div id="god-rank" style="color:#ed1e79; font-weight:bold; margin-top:10px;">CELESTIAL SPARK</div>
-            
-            <div id="planet-selector">
-                <button class="planet-btn active-planet" id="p0" onclick="switchPlanet(0)">Earth</button>
-                <button class="planet-btn" id="p1" onclick="switchPlanet(1)">Mars</button>
-                <button class="planet-btn" id="p2" onclick="switchPlanet(2)">Crystalis</button>
-            </div>
-
-            <div id="grid-container" class="theme-earth">
-                <div id="boss" onclick="attackBoss()"><div style="width:80%; height:5px; background:#333; margin:10px auto;"><div id="hp-fill" style="width:100%; height:100%; background:lime;"></div></div></div>
-                <div id="grid-9x9"></div>
-            </div>
-            
-            <button onclick="advanceDay()" style="padding: 15px 40px;">Advance Day</button>
-            <p id="day-text">Day 1 / 20</p>
-        </section>
-
-        <section id="skill-screen" class="screen" style="display:none;"><div id="skills-container"></div></section>
-        <section id="faith-screen" class="screen" style="display:none;"><div id="faith-shop"></div></section>
-        <section id="law-nav" class="screen" style="display:none;"><div id="laws-container"></div></section>
-        <section id="stat-screen" class="screen" style="display:none;"><h2>Records</h2><div id="ach-list"></div></section>
-    </main>
+    <div id="white-out" class="screen hidden">
+        <div id="final-msg"></div>
+    </div>
 
     <script>
-        let isotopes = 0, faith = 0, currentDay = 1, clicks = 0, kills = 0, activePlanet = 0;
-        let planetLevels = [[0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]]; // Skills per planet
-        let bossActive = false, bossHP = 100;
-
-        let skillsData = [
-            { id: 0, name: "Tectonics", base: 50 }, { id: 1, name: "Atmosphere", base: 250 },
-            { id: 2, name: "Ozone", base: 1000 }, { id: 3, name: "Hydration", base: 4000 },
-            { id: 4, name: "Biosphere", base: 15000 }, { id: 5, name: "Flora", base: 60000 },
-            { id: 6, name: "Civilization", base: 250000 }, { id: 7, name: "MegaCities", base: 1000000 }
+        // --- DATA ENGINE ---
+        const ERAS = [
+            { name: "ARCHEAN EARTH", url: "https://images.unsplash.com/photo-1464802686167-b939a67e0621?w=600" },
+            { name: "PANGEA", url: "https://images.unsplash.com/photo-1581084324492-c8076f130f86?w=600" },
+            { name: "ICE AGE", url: "https://images.unsplash.com/photo-1516934023933-90d2e5f564f8?w=600" },
+            { name: "ANTHROPOCENE", url: "https://images.unsplash.com/photo-1614730321146-b6fa6a46bcb4?w=600" }
         ];
 
-        let fUpgrades = [{ name: "Holy Magnet", cost: 5, owned: false }, { name: "Auto-Genesis", cost: 10, owned: false }];
-        let laws = [{ name: "Law of Chronos", cost: 50, active: false }, { name: "Law of Aegis", cost: 50, active: false }];
-        let achs = [{ name: "Clicker", goal: 100, type: "clk", unlocked: false }, { name: "Rich", goal: 1000000, type: "iso", unlocked: false }];
+        const SKILLS = [
+            { id: 'life', name: 'Rapid Mitosis', icon: '🧬', cost: 10 },
+            { id: 'tech', name: 'AI Uplink', icon: '📡', cost: 15 },
+            { id: 'time', name: 'Chrono Anchor', icon: '⌛', cost: 25 }
+        ];
 
-        function login() { document.getElementById('login-screen').style.display = 'none'; checkSave(); createGrid(); startAutoDay(); updateUI(); setInterval(saveGame, 5000); }
+        const ADDONS = [
+            { id: 'auto_smite', name: 'Orbital Laser', desc: 'Auto-purges fungus every 4s.' },
+            { id: 'luck_core', name: 'Resource Probe', desc: 'Double Isotopes from events.' }
+        ];
 
-        function createGrid() {
-            const grid = document.getElementById('grid-9x9'); grid.innerHTML = "";
-            for (let i = 0; i < 81; i++) { let d = document.createElement('div'); d.className = 'tile'; d.id = 'tile-'+i; grid.appendChild(d); }
-            updateWorldVisuals();
-        }
+        // --- STATE MANAGEMENT ---
+        let meta = JSON.parse(localStorage.getItem('god_core_v190')) || {
+            isotopes: 0,
+            levels: { life: 0, tech: 0, time: 0 },
+            addons: [],
+            addonCount: 0
+        };
 
-        function switchPlanet(id) {
-            activePlanet = id;
-            const container = document.getElementById('grid-container');
-            container.className = id === 0 ? 'theme-earth' : id === 1 ? 'theme-mars' : 'theme-crystal';
-            document.querySelectorAll('.planet-btn').forEach((b, i) => b.className = i === id ? 'planet-btn active-planet' : 'planet-btn');
-            updateWorldVisuals(); updateUI();
-        }
+        let state = { active: false, year: 0, maxYear: 30, pop: 10, faith: 0, chunk: 0, chunks: [], stab: false };
 
-        function advanceDay(isAuto = false) {
-            if(!isAuto) clicks++;
-            if (currentDay < 20) currentDay++;
-            else {
-                currentDay = 1;
-                let mult = fUpgrades[0].owned ? 2 : 1;
-                let totalSkills = planetLevels[activePlanet].reduce((a,b)=>a+b, 0);
-                isotopes += (100 + (totalSkills * 50)) * mult;
-                if(planetLevels[activePlanet][7] > 0 && !bossActive && Math.random() < 0.3) spawnBoss();
+        const save = () => localStorage.setItem('god_core_v190', JSON.stringify(meta));
+
+        // --- CORE LOGIC ---
+        window.startGame = () => {
+            state.active = true; state.year = 0; state.pop = 10; state.faith = 20; state.chunk = 0;
+            state.maxYear = 30 + (meta.levels.time * 10);
+            state.chunks = Array.from({length: 4}, () => Array(9).fill(0));
+            state.chunks[0][4] = 1; 
+            document.getElementById('menu-screen').classList.add('hidden');
+            document.getElementById('game-screen').classList.remove('hidden');
+            gameLoop();
+        };
+
+        function gameLoop() {
+            if(!state.active) return;
+            state.year++;
+            state.faith += (state.pop / 15) + (meta.levels.tech * 5);
+            
+            // ASCENSION CHECK
+            if(state.pop >= 10000 && state.faith >= 10000) {
+                triggerSupernova();
+                return;
             }
-            checkAchs(); updateUI();
-        }
 
-        function buySkill(id) {
-            let lvl = planetLevels[activePlanet][id];
-            let cost = Math.floor(skillsData[id].base * Math.pow(2.2, lvl));
-            if(isotopes >= cost && lvl < 10) {
-                isotopes -= cost;
-                planetLevels[activePlanet][id]++;
-                updateWorldVisuals(); updateUI();
+            // Expansion
+            if(Math.random() < (0.05 + meta.levels.life * 0.05)) expand(1);
+            if(Math.random() < 0.15) expand(2);
+            
+            // Addons
+            if(meta.addons.includes('auto_smite') && state.year % 4 === 0) {
+                let fIdx = state.chunks[state.chunk].indexOf(2);
+                if(fIdx !== -1) state.chunks[state.chunk][fIdx] = 0;
+            }
+
+            if(Math.random() < 0.1) triggerEvent();
+
+            updateUI();
+            renderGrid();
+
+            if(state.year >= state.maxYear) {
+                let gain = Math.floor(state.pop / 50) + 1;
+                meta.isotopes += gain; save();
+                location.reload(); 
+            } else {
+                setTimeout(gameLoop, 1000);
             }
         }
 
-        function startAutoDay() { setInterval(() => { if(fUpgrades[1].owned) advanceDay(true); }, laws[0].active ? 1500 : 3000); }
+        function expand(type) {
+            const empties = state.chunks[state.chunk].map((t,i) => t === 0 ? i : -1).filter(i => i !== -1);
+            if(empties.length) {
+                state.chunks[state.chunk][empties[Math.floor(Math.random()*empties.length)]] = type;
+                if(type === 1) state.pop += 15 + (meta.levels.life * 10);
+            }
+        }
+
+        function triggerEvent() {
+            const log = document.getElementById('event-log');
+            if(Math.random() > 0.8) {
+                state.stab = true;
+                document.getElementById('stabilize-ui').classList.remove('hidden');
+                setTimeout(() => { if(state.stab) { state.pop -= 40; log.innerHTML = `<div style="color:red">SYNC ERROR: Pop Lost</div>` + log.innerHTML; }}, 2500);
+            } else {
+                let gain = meta.addons.includes('luck_core') ? 4 : 2;
+                meta.isotopes += gain;
+                log.innerHTML = `<div style="color:var(--rare)">FEED: Found ${gain} Isotope</div>` + log.innerHTML;
+            }
+        }
+
+        function triggerSupernova() {
+            state.active = false;
+            document.getElementById('white-out').classList.remove('hidden');
+            const msg = "MESSAGE FROM UNKNOWN:\n\nSynchronization successful...\nAnalyzing chronology...\n\nWarning: Earth was not evolving.\nIt was reversing.\n\nYou have returned to the spark.\nThis is not a mission.\nThis is a Supernova.\n\nThanks for playing.";
+            let i = 0;
+            function type() {
+                if(i < msg.length) {
+                    document.getElementById('final-msg').innerHTML += msg.charAt(i);
+                    i++; setTimeout(type, 50);
+                }
+            }
+            setTimeout(type, 1500);
+        }
+
+        // --- UI & NAVIGATION ---
+        window.buySkill = (id) => {
+            const s = SKILLS.find(x => x.id === id);
+            const cost = s.cost * (meta.levels[id] + 1);
+            if(meta.isotopes >= cost) { meta.isotopes -= cost; meta.levels[id]++; save(); updateMenu(); }
+        };
+
+        window.buyAddon = (id) => {
+            const cost = 100 * Math.pow(10, meta.addonCount);
+            if(meta.isotopes >= cost && !meta.addons.includes(id)) {
+                meta.isotopes -= cost; meta.addons.push(id); meta.addonCount++; save(); updateMenu();
+            }
+        };
+
+        window.nav = (dir) => {
+            state.chunk = Math.max(0, Math.min(3, state.chunk + dir));
+            document.getElementById('era-name').innerText = ERAS[state.chunk].name;
+            renderGrid();
+        };
+
+        window.smite = () => {
+            if(state.faith >= 50) {
+                state.faith -= 50;
+                state.chunks[state.chunk] = state.chunks[state.chunk].map(t => t === 2 ? 0 : t);
+                renderGrid();
+            }
+        };
+
+        window.stabilize = () => { state.stab = false; document.getElementById('stabilize-ui').classList.add('hidden'); };
+
+        function renderGrid() {
+            const g = document.getElementById('grid-container'); g.innerHTML = '';
+            state.chunks[state.chunk].forEach(t => {
+                const d = document.createElement('div');
+                d.className = `tile ${t===1?'player':(t===2?'rival':'empty')}`;
+                d.style.backgroundImage = `url(${ERAS[state.chunk].url})`;
+                g.appendChild(d);
+            });
+        }
 
         function updateUI() {
-            document.getElementById('isotope-count').innerText = Math.floor(isotopes).toLocaleString();
-            document.getElementById('faith-count').innerText = faith;
-            document.getElementById('day-text').innerText = "Day " + currentDay + " / 20";
-            
-            const sCon = document.getElementById('skills-container');
-            sCon.innerHTML = `<h2>Skills (${activePlanet === 0 ? 'Earth' : activePlanet === 1 ? 'Mars' : 'Crystalis'})</h2>`;
-            skillsData.forEach((s, i) => {
-                let lvl = planetLevels[activePlanet][i];
-                let cost = Math.floor(s.base * Math.pow(2.2, lvl));
-                let isMax = lvl >= 10;
-                let reqMet = i === 0 || planetLevels[activePlanet][i-1] > 0;
-                sCon.innerHTML += `<div class="upgrade-card" style="opacity:${reqMet?1:0.3}"><b>${reqMet?s.name:'???'}</b> (${lvl}/10)<br>
-                <button onclick="buySkill(${i})" ${(!reqMet||isotopes<cost||isMax)?'disabled':''}>${isMax?'MAXED':cost.toLocaleString()}</button></div>`;
+            document.getElementById('ui-year').innerText = (state.maxYear - state.year);
+            document.getElementById('ui-pop').innerText = Math.floor(state.pop);
+            document.getElementById('ui-faith').innerText = Math.floor(state.faith);
+        }
+
+        function updateMenu() {
+            document.getElementById('meta-isotopes').innerText = meta.isotopes + " ⚛";
+            const tree = document.getElementById('skill-tree'); tree.innerHTML = '';
+            SKILLS.forEach(s => {
+                let lv = meta.levels[s.id]; let cost = s.cost * (lv + 1);
+                tree.innerHTML += `<div class="node"><div>${s.icon} ${s.name}</div><button class="buy-btn" ${meta.isotopes<cost?'disabled':''} onclick="buySkill('${s.id}')">LV ${lv} (${cost}⚛)</button></div>`;
             });
-
-            const fCon = document.getElementById('faith-shop');
-            fCon.innerHTML = `<h2>Altar</h2><div class="upgrade-card"><p>Pending: ${Math.floor(Math.sqrt(isotopes/500))} Faith</p><button onclick="rebirth()">ASCEND</button></div>`;
-            fUpgrades.forEach((u, i) => { fCon.innerHTML += `<div class="upgrade-card"><b>${u.name}</b><br><button onclick="buyFaith(${i})" ${(faith<u.cost||u.owned)?'disabled':''}>${u.owned?'OWNED':u.cost+' FP'}</button></div>`; });
-
-            const lCon = document.getElementById('laws-container'); lCon.innerHTML = "<h2>Laws</h2>";
-            laws.forEach((l, i) => { lCon.innerHTML += `<div class="upgrade-card law-card"><b>${l.name}</b><br><button onclick="enactLaw(${i})" ${(faith<l.cost||l.active)?'disabled':''}>${l.active?'ENACTED':l.cost+' FP'}</button></div>`; });
+            const shop = document.getElementById('addon-shop'); shop.innerHTML = '<h3>MODULES</h3>';
+            let aCost = 100 * Math.pow(10, meta.addonCount);
+            ADDONS.forEach(a => {
+                let owned = meta.addons.includes(a.id);
+                shop.innerHTML += `<div class="node" style="${owned?'opacity:0.4':''}"><b>${a.name}</b><button class="buy-btn" ${owned||meta.isotopes<aCost?'disabled':''} onclick="buyAddon('${a.id}')">${owned?'INSTALLED':aCost+'⚛'}</button></div>`;
+            });
         }
 
-        function rebirth() {
-            let p = Math.floor(Math.sqrt(isotopes/500));
-            if(p >= 1 && confirm("Ascend? Resets skills and isotopes for permanent Faith.")) {
-                faith += p; isotopes = 0; planetLevels = [[0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]];
-                updateWorldVisuals(); updateUI();
-            }
-        }
-
-        function buyFaith(id) { if(faith >= fUpgrades[id].cost && !fUpgrades[id].owned) { faith -= fUpgrades[id].cost; fUpgrades[id].owned = true; updateUI(); } }
-        function enactLaw(id) { if(faith >= laws[id].cost && !laws[id].active) { faith -= laws[id].cost; laws[id].active = true; updateUI(); } }
-
-        function updateWorldVisuals() {
-            let lvls = planetLevels[activePlanet];
-            for(let i=0; i<81; i++) {
-                let t = document.getElementById('tile-'+i); if(!t) continue; t.className = 'tile';
-                if(i < lvls[7]*10) t.classList.add('stage-city');
-                else if(i < lvls[5]*12) t.classList.add('stage-flowers');
-                else if(i < lvls[3]*15) t.classList.add('stage-ocean');
-                else if(i < lvls[1]*15) t.classList.add('stage-red');
-                else if(i < lvls[0]*20) t.classList.add('stage-rock');
-            }
-        }
-
-        function checkAchs() {
-            let count = 0;
-            achs.forEach(a => { if(!a.unlocked) { if(a.type==="clk"&&clicks>=a.goal) a.unlocked=true; if(a.type==="iso"&&isotopes>=a.goal) a.unlocked=true; } if(a.unlocked) count++; });
-            let r = count >= 2 ? "UNIVERSAL OVERLORD" : count >= 1 ? "SOLAR WARDEN" : "CELESTIAL SPARK";
-            document.getElementById('god-rank').innerText = r;
-            if(count >= 2) document.getElementById('law-nav-btn').style.display = 'block';
-        }
-
-        function saveGame() { localStorage.setItem('godSim_v80', JSON.stringify({iso:isotopes, fth:faith, pL:planetLevels, fup:fUpgrades.map(u=>u.owned), law:laws.map(l=>l.active)})); }
-        function checkSave() { 
-            let s = localStorage.getItem('godSim_v80'); 
-            if(s) { 
-                let d = JSON.parse(s); isotopes = d.iso; faith = d.fth; planetLevels = d.pL; 
-                d.fup.forEach((o, i) => fUpgrades[i].owned = o); 
-                d.law.forEach((a, i) => laws[i].active = a); 
-            } 
-        }
-        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.style.display = 'none'); document.getElementById(id).style.display = 'block'; updateUI(); }
+        updateMenu();
     </script>
 </body>
-            </html>
+</html>
