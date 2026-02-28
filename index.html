@@ -3,138 +3,203 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
     <meta name="google-site-verification" content="google4075c778cb17a8fc" />
-
-    <title>God Simulator | Planet Simulator Online</title>
-    <meta name="description" content="Play God Simulator: An addictive idle game where you evolve Earth, Mars, and Crystalis. Harvest isotopes, gain faith, and build mega-cities.">
-    <meta name="keywords" content="God Simulator, Planet Simulator Online, Idle Game, Planet Builder, Browser Game">
     
+    <title>God Simulator | Planet Simulator Online</title>
+    <meta name="description" content="A low-power, high-depth planet evolution simulator. Build, prestige, and conquer the void.">
+
+    <script src="upgrades/skills.js"></script>
+    <script src="prestige/void-shop.js"></script>
+
     <style>
-        :root { --primary: #ed1e79; --secondary: #00f2ff; --bg: #050508; --card: #161b33; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
-        #resource-bar { background: #1a1a2e; padding: 15px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; transition: 0.3s; }
-        .saving { border-bottom: 2px solid lime !important; box-shadow: 0 0 10px lime; }
+        :root { --primary: #ed1e79; --void: #8a2be2; --bg: #050508; --card: #111420; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
+        
+        /* PERFORMANCE OPTIMIZED BAR */
+        #resource-bar { background: #000; padding: 10px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; font-size: 14px; }
+        .void-text { color: var(--void); font-weight: bold; }
+
+        /* NAVIGATION */
         #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
-        #main-nav button { background: none; border: none; color: white; cursor: pointer; font-weight: bold; }
-        .game-area { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 20px; margin-top: 20px; padding: 10px; }
-        #grid-container { position: relative; width: fit-content; padding: 10px; border: 1px solid #333; border-radius: 8px; background: #000; }
-        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 30px); gap: 2px; }
-        .tile { width: 30px; height: 30px; background: #1a1a1a; border-radius: 2px; transition: 0.8s; }
-        .side-controls { display: flex; flex-direction: column; align-items: center; gap: 10px; }
-        #day-btn { width: 110px; height: 110px; border-radius: 50%; border: 4px solid var(--primary); background: #111; color: white; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        #day-btn:hover { background: var(--primary); transform: scale(1.05); }
-        .stage-rock { background: #636e72 !important; } .stage-red { background: #c0392b !important; } 
-        .stage-ocean { background: #0984e3 !important; } .stage-flowers { background: #00b894 !important; }
-        .stage-city { background: #f1c40f !important; box-shadow: 0 0 8px gold; }
-        .planet-btn { background: #222; border: 1px solid #444; color: #aaa; padding: 8px 15px; margin: 5px; border-radius: 20px; font-size: 11px; cursor: pointer; }
-        .active-planet { border-color: var(--primary); color: white; background: rgba(237, 30, 121, 0.1); }
-        .upgrade-card { background: var(--card); padding: 15px; margin: 10px auto; border: 1px solid #444; border-radius: 10px; width: 85%; max-width: 400px; }
-        button.buy-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
-        button.buy-btn:disabled { background: #444; opacity: 0.5; }
-        #save-code-box { width: 90%; background: #000; color: lime; border: 1px solid lime; font-family: monospace; padding: 10px; font-size: 10px; height: 60px; word-break: break-all; margin-top: 10px; }
-        .full-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--bg); display: flex; justify-content: center; align-items: center; z-index: 4000; flex-direction: column; }
+        #main-nav button { background: none; border: none; color: #888; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
+        #main-nav button.active-nav { color: var(--primary); border-bottom: 2px solid var(--primary); }
+
+        /* GAME GRID (Low Power) */
+        .game-area { display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; width: 300px; height: 300px; background: #222; border: 4px solid #333; }
+        .tile { background: #1a1a1a; width: 100%; height: 100%; }
+        
+        /* STAGES - Using CSS instead of Images for Speed */
+        .s1 { background: #444; } /* Rock */
+        .s2 { background: #a52a2a; } /* Mars-like */
+        .s3 { background: #0000ff; } /* Water */
+        .s4 { background: #228b22; } /* Life */
+        .s5 { background: #ffd700; box-shadow: inset 0 0 5px #fff; } /* City */
+
+        /* BUTTONS */
+        .big-btn { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary); background: #000; color: white; cursor: pointer; margin: 20px; font-weight: bold; }
+        .big-btn:active { transform: scale(0.9); }
+        .buy-btn { background: var(--primary); border: none; color: white; padding: 10px; border-radius: 4px; cursor: pointer; width: 100%; }
+        .buy-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+        .screen { display: none; padding-bottom: 50px; }
+        .active-screen { display: block; }
+        .card { background: var(--card); border: 1px solid #333; padding: 15px; margin: 10px auto; width: 90%; max-width: 400px; border-radius: 8px; }
     </style>
 </head>
-<body onload="checkSave()">
-
-    <div id="login-screen" class="full-overlay">
-        <div style="border: 2px solid var(--primary); padding: 40px; border-radius: 20px; background: #111;">
-            <h1>GOD SIMULATOR</h1>
-            <button onclick="login()" style="background:var(--primary); color:white; padding:15px 40px; border:none; border-radius: 5px; font-weight:bold; cursor:pointer;">AWAKEN</button>
-        </div>
-    </div>
+<body onload="initGame()">
 
     <div id="resource-bar">
-        <span>ISO: <b id="isotope-count">0</b></span>
-        <span style="color:var(--secondary);">FAITH: <b id="faith-count">0</b></span>
+        <span>ISO: <b id="iso-display">0</b></span>
+        <span class="void-text">VOID: <b id="void-display">0</b></span>
     </div>
 
     <nav id="main-nav">
-        <button onclick="showScreen('play-screen')">UNIVERSE</button>
-        <button onclick="showScreen('skill-screen')">CREATION</button>
-        <button onclick="showScreen('stat-screen')" style="color:gold;">PANTHEON</button>
+        <button id="nav-world" class="active-nav" onclick="tab('world')">WORLD</button>
+        <button id="nav-skills" onclick="tab('skills')">SKILLS</button>
+        <button id="nav-void" onclick="tab('void')">VOID</button>
     </nav>
 
-    <main>
-        <section id="play-screen" class="screen">
-            <div id="planet-selector" style="margin-top:15px;">
-                <button class="planet-btn active-planet" onclick="switchPlanet(0)">EARTH</button>
-                <button class="planet-btn" onclick="switchPlanet(1)">MARS</button>
-                <button class="planet-btn" onclick="switchPlanet(2)">CRYSTALIS</button>
+    <section id="screen-world" class="screen active-screen">
+        <div class="game-area">
+            <div id="grid-9x9"></div>
+            <button class="big-btn" onclick="doDay()">ADVANCE DAY<br><small id="day-counter">1/20</small></button>
+            <div id="planet-tabs">
+                <button onclick="changePlanet(0)">EARTH</button>
+                <button onclick="changePlanet(1)">MARS</button>
             </div>
-            <div class="game-area">
-                <div id="grid-container"><div id="grid-9x9"></div></div>
-                <div class="side-controls">
-                    <button id="day-btn" onclick="advanceDay()">ADVANCE<br>DAY</button>
-                    <p id="day-text" style="font-size: 12px; color: #888;">Day 1 / 20</p>
-                </div>
-            </div>
-            <div style="margin: 20px auto; width: 320px; min-height: 50px; background: #000; padding: 5px; border: 1px solid #333;">
-                <div id="container-900a963ba8053c59fa04ff02450d4e12"></div>
-                <script async="async" data-cfasync="false" src="https://pl28773503.effectivegatecpm.com/900a963ba8053c59fa04ff02450d4e12/invoke.js"></script>
-            </div>
-        </section>
+        </div>
+    </section>
 
-        <section id="skill-screen" class="screen" style="display:none;"><div id="skills-container"></div></section>
+    <section id="screen-skills" class="screen">
+        <h2>SKILL TREE</h2>
+        <div id="skill-list"></div>
+    </section>
 
-        <section id="stat-screen" class="screen" style="display:none;">
-            <h2 style="color:gold;">DIVINE ARCHIVES</h2>
-            <div class="upgrade-card" style="border-color:gold;">
-                <b>MIGRATION CODE</b><br>
-                <textarea id="save-code-box" placeholder="Paste code..."></textarea>
-                <div style="margin-top:15px;">
-                    <button onclick="exportSave()" style="background:#333; color:white; padding:10px;">EXPORT</button>
-                    <button onclick="importSave()" style="background:gold; color:black; padding:10px; font-weight:bold;">IMPORT</button>
-                </div>
-            </div>
-            <button onclick="hardReset()" style="color:red; background:none; border:1px solid red; margin-top:20px; cursor:pointer;">PURGE DATA</button>
-            <br><br>
-            <a href="#" onclick="alert('Privacy Policy: This game saves data locally and uses ads.')" style="color:#444; font-size:10px;">Privacy Policy</a>
-        </section>
-    </main>
+    <section id="screen-void" class="screen">
+        <h2 style="color:var(--void)">THE BIG CRUNCH</h2>
+        <div class="card" style="border-color:var(--void)">
+            <p>Collapsing the universe grants Void Tokens based on total Isotopes.</p>
+            <button class="buy-btn" style="background:var(--void)" onclick="crunch()">CRUNCH FOR <span id="pending-tokens">0</span> TOKENS</button>
+        </div>
+        <div id="void-upgrades"></div>
+    </section>
 
     <script>
-        let isotopes = 0, faith = 0, currentDay = 1, activePlanet = 0;
-        let planetLevels = [[0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0], [0,0,0,0,0,0,0,0]];
-        const skillsData = [{name:"Tectonics", base:50}, {name:"Atmosphere", base:250}, {name:"Ozone", base:1000}, {name:"Hydration", base:4000}, {name:"Biosphere", base:15000}, {name:"Flora", base:60000}, {name:"Civilization", base:250000}, {name:"MegaCities", base:1000000}];
+        // CORE STATE
+        let g = {
+            iso: 0,
+            void: 0,
+            day: 1,
+            planet: 0,
+            levels: [[0,0,0,0,0],[0,0,0,0,0]], // Simplified for low power
+            skills: {}
+        };
 
-        function login() { document.getElementById('login-screen').style.display = 'none'; createGrid(); updateUI(); }
-        function saveGame() {
-            localStorage.setItem('godSim_v87_final', JSON.stringify({ iso: isotopes, fth: faith, pL: planetLevels, day: currentDay }));
-            document.getElementById('resource-bar').classList.add('saving');
-            setTimeout(() => document.getElementById('resource-bar').classList.remove('saving'), 600);
+        function initGame() {
+            load();
+            renderGrid();
+            updateUI();
         }
-        function checkSave() {
-            let saved = localStorage.getItem('godSim_v87_final');
-            if(saved) { let d = JSON.parse(saved); isotopes = d.iso||0; faith = d.fth||0; planetLevels = d.pL||planetLevels; currentDay = d.day||1; }
+
+        function doDay() {
+            if(g.day < 20) {
+                g.day++;
+            } else {
+                g.day = 1;
+                let harvest = 100 + (g.levels[g.planet].reduce((a,b)=>a+b, 0) * 50);
+                g.iso += harvest;
+            }
+            updateUI();
+            save();
         }
-        function exportSave() { saveGame(); let code = btoa(localStorage.getItem('godSim_v87_final')); document.getElementById('save-code-box').value = code; }
-        function importSave() { try { let decoded = atob(document.getElementById('save-code-box').value); localStorage.setItem('godSim_v87_final', decoded); location.reload(); } catch(e) { alert("Invalid Code"); } }
-        function hardReset() { if(confirm("Wipe all data?")) { localStorage.clear(); location.reload(); } }
-        function createGrid() { const grid = document.getElementById('grid-9x9'); grid.innerHTML = ""; for (let i = 0; i < 81; i++) { let d = document.createElement('div'); d.className = 'tile'; d.id = 'tile-' + i; grid.appendChild(d); } updateWorldVisuals(); }
-        function switchPlanet(id) { activePlanet = id; updateWorldVisuals(); updateUI(); saveGame(); }
-        function advanceDay() { if (currentDay < 20) currentDay++; else { currentDay = 1; isotopes += (100 + (planetLevels[activePlanet].reduce((a, b) => a + b, 0) * 50)); } updateUI(); if(currentDay % 5 === 0) saveGame(); }
-        function buySkill(id) { let lvl = planetLevels[activePlanet][id]; let cost = Math.floor(skillsData[id].base * Math.pow(2.2, lvl)); if(isotopes >= cost && lvl < 10) { isotopes -= cost; planetLevels[activePlanet][id]++; updateWorldVisuals(); updateUI(); saveGame(); } }
-        function updateUI() {
-            document.getElementById('isotope-count').innerText = Math.floor(isotopes).toLocaleString();
-            document.getElementById('faith-count').innerText = faith.toLocaleString();
-            document.getElementById('day-text').innerText = `Day ${currentDay} / 20`;
-            const sCon = document.getElementById('skills-container');
-            sCon.innerHTML = "<h2>CREATION</h2>";
-            skillsData.forEach((s, i) => {
-                let lvl = planetLevels[activePlanet][i], cost = Math.floor(s.base * Math.pow(2.2, lvl)), unl = i === 0 || planetLevels[activePlanet][i-1] > 0;
-                sCon.innerHTML += `<div class="upgrade-card" style="opacity: ${unl ? 1 : 0.3}"><b>${unl ? s.name.toUpperCase() : '???'}</b> (Lvl ${lvl}/10)<br><button class="buy-btn" onclick="buySkill(${i})" ${(isotopes < cost || !unl || lvl >= 10) ? 'disabled' : ''}>${lvl >= 10 ? 'MAX' : cost.toLocaleString() + ' ISO'}</button></div>`;
-            });
-        }
-        function updateWorldVisuals() {
-            let lvls = planetLevels[activePlanet];
+
+        function renderGrid() {
+            const grid = document.getElementById('grid-9x9');
+            grid.innerHTML = '';
+            let pLvl = g.levels[g.planet];
             for(let i=0; i<81; i++) {
-                let t = document.getElementById('tile-'+i); if(!t) continue; t.className = 'tile';
-                if(i < lvls[7]*10) t.classList.add('stage-city'); else if(i < lvls[5]*12) t.classList.add('stage-flowers'); else if(i < lvls[3]*15) t.classList.add('stage-ocean'); else if(i < lvls[1]*15) t.classList.add('stage-red'); else if(i < lvls[0]*20) t.classList.add('stage-rock');
+                let div = document.createElement('div');
+                div.className = 'tile';
+                // Logic to show evolution based on levels
+                if(i < pLvl[4]*10) div.classList.add('s5');
+                else if(i < pLvl[3]*15) div.classList.add('s4');
+                else if(i < pLvl[2]*20) div.classList.add('s3');
+                else if(i < pLvl[0]*25) div.classList.add('s1');
+                grid.appendChild(div);
             }
         }
-        function showScreen(id) { document.querySelectorAll('.screen').forEach(s => s.style.display = 'none'); document.getElementById(id).style.display = 'block'; updateUI(); }
+
+        function tab(name) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.querySelectorAll('#main-nav button').forEach(b => b.classList.remove('active-nav'));
+            document.getElementById('screen-'+name).classList.add('active-screen');
+            document.getElementById('nav-'+name).classList.add('active-nav');
+            if(name === 'skills') renderSkills();
+        }
+
+        function updateUI() {
+            document.getElementById('iso-display').innerText = Math.floor(g.iso).toLocaleString();
+            document.getElementById('void-display').innerText = g.void;
+            document.getElementById('day-counter').innerText = g.day + "/20";
+            
+            // Connect to void-shop.js logic
+            if(typeof getPendingTokens === "function") {
+                document.getElementById('pending-tokens').innerText = getPendingTokens(g.iso);
+            }
+        }
+
+        function crunch() {
+            if(typeof triggerBigCrunch === "function") {
+                if(triggerBigCrunch(g.iso)) {
+                    g.void += parseInt(document.getElementById('pending-tokens').innerText);
+                    g.iso = 0; g.day = 1; g.levels = [[0,0,0,0,0],[0,0,0,0,0]];
+                    save(); initGame(); tab('world');
+                }
+            }
+        }
+
+        // LOW POWER SAVE SYSTEM
+        function save() { localStorage.setItem('planetSim_v8', JSON.stringify(g)); }
+        function load() { 
+            let data = localStorage.getItem('planetSim_v8');
+            if(data) g = JSON.parse(data);
+        }
+
+        // Skill rendering logic (links to upgrades/skills.js)
+        function renderSkills() {
+            const container = document.getElementById('skill-list');
+            container.innerHTML = '';
+            if(typeof skillTree === "undefined") {
+                container.innerHTML = "<p>Loading skills.js...</p>";
+                return;
+            }
+            Object.keys(skillTree).forEach(key => {
+                let s = skillTree[key];
+                let lvl = g.skills[key] || 0;
+                let cost = calculateSkillCost(key, lvl);
+                container.innerHTML += `
+                    <div class="card">
+                        <b>${s.name}</b> (Lvl ${lvl})<br>
+                        <small>${s.desc}</small><br><br>
+                        <button class="buy-btn" onclick="buySkill('${key}')" ${g.iso < cost ? 'disabled' : ''}>
+                            Upgrade: ${cost} ISO
+                        </button>
+                    </div>`;
+            });
+        }
+
+        function buySkill(key) {
+            let lvl = g.skills[key] || 0;
+            let cost = calculateSkillCost(key, lvl);
+            if(g.iso >= cost) {
+                g.iso -= cost;
+                g.skills[key] = lvl + 1;
+                // Update planet levels based on skill type
+                if(key === 'photosynthesis') g.levels[g.planet][3]++; 
+                renderSkills(); updateUI(); save(); renderGrid();
+            }
+        }
     </script>
 </body>
 </html>
