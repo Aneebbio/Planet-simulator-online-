@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="google-site-verification" content="google4075c778cb17a8fc" />
     <title>God Simulator | Planet Simulator Online</title>
     
     <script src="upgrades/skills.js"></script>
@@ -11,8 +10,7 @@
 
     <style>
         :root { --primary: #ed1e79; --void: #8a2be2; --bg: #050508; --card: #111420; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; }
-        
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; }
         #resource-bar { background: #000; padding: 12px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
         #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
         #main-nav button { background: none; border: none; color: #666; font-weight: bold; cursor: pointer; font-size: 11px; }
@@ -20,20 +18,20 @@
 
         .game-area { display: flex; flex-direction: column; align-items: center; padding: 15px; }
         #grid-9x9 { display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; width: 300px; height: 300px; background: #222; border: 3px solid #333; }
-        .tile { background: #111; width: 100%; height: 100%; }
+        .tile { background: #111; width: 100%; height: 100%; transition: background 0.5s; }
         
-        /* Stages */
-        .s1 { background: #555; } .s2 { background: #8b4513; } .s3 { background: #1e90ff; }
-        .s4 { background: #2ed573; } .s5 { background: #ffa502; box-shadow: inset 0 0 5px #000; }
+        /* THE VISUAL STAGES */
+        .s1 { background: #555; } /* Rock (Tectonics) */
+        .s2 { background: #8b4513; } /* Soil (Atmosphere) */
+        .s3 { background: #1e90ff; } /* Water (Hydration) */
+        .s4 { background: #2ed573; } /* Flora (Biosphere) */
+        .s5 { background: #ffa502; box-shadow: inset 0 0 5px #000; } /* City (Civilization) */
 
         .day-btn { width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--primary); background: #000; color: white; cursor: pointer; margin: 15px; font-weight: bold; position: relative; }
-        
-        /* Auto-progress ring */
-        #auto-ring { position: absolute; top: -5px; left: -5px; width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--void); clip-path: inset(0 100% 0 0); transition: 0.1s linear; opacity: 0.5; }
+        #auto-ring { position: absolute; top: -5px; left: -5px; width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--void); clip-path: inset(0 100% 0 0); transition: 0.1s linear; opacity: 0.4; pointer-events: none; }
 
         .buy-btn { background: var(--primary); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; }
         .buy-btn:disabled { opacity: 0.2; }
-
         .screen { display: none; }
         .active-screen { display: block; }
         .card { background: var(--card); border: 1px solid #222; padding: 12px; margin: 8px auto; width: 90%; max-width: 380px; border-radius: 8px; text-align: left; }
@@ -47,7 +45,7 @@
     </div>
 
     <nav id="main-nav">
-        <button id="nav-world" class="active-nav" onclick="tab('world')">WORLD</button>
+        <button id="nav-world" class="active-nav" onclick="tab('world')">PLANET</button>
         <button id="nav-skills" onclick="tab('skills')">UPGRADES</button>
         <button id="nav-void" onclick="tab('void')">VOID</button>
     </nav>
@@ -59,8 +57,7 @@
                 <div id="auto-ring"></div>
                 DAY<br><span id="day-counter">1/20</span>
             </button>
-            
-            <div id="ad-block" style="width:320px; height:50px; background:#000; border:1px solid #222;">
+            <div style="width:320px; height:50px; background:#000;">
                 <div id="container-900a963ba8053c59fa04ff02450d4e12"></div>
                 <script async src="https://pl28773503.effectivegatecpm.com/900a963ba8053c59fa04ff02450d4e12/invoke.js"></script>
             </div>
@@ -68,25 +65,25 @@
     </section>
 
     <section id="screen-skills" class="screen">
-        <h3 style="margin-top:15px;">CREATION LAB</h3>
+        <h3 style="margin-top:15px;">CREATION</h3>
         <div id="skill-list"></div>
     </section>
 
     <section id="screen-void" class="screen">
-        <h3 style="color:var(--void); margin-top:15px;">THE BIG CRUNCH</h3>
+        <h3 style="color:var(--void); margin-top:15px;">VOID SHOP</h3>
         <div class="card" style="border:1px solid var(--void); text-align:center;">
             <button class="buy-btn" style="background:var(--void)" onclick="prestige()">
-                RESET FOR <span id="pending-tokens">0</span> VOID TOKENS
+                COLLAPSE FOR <span id="pending-tokens">0</span> VOID
             </button>
         </div>
     </section>
 
     <script>
-        let state = { iso: 0, void: 0, day: 1, planet: 0, lvls: [[0,0,0,0,0],[0,0,0,0,0]], skills: {} };
+        let state = { iso: 0, void: 0, day: 1, planet: 0, skills: {} };
         let autoTick = 0;
 
         function init() {
-            let saved = localStorage.getItem('planetSim_v8_cheap');
+            let saved = localStorage.getItem('planetSim_v9');
             if(saved) state = JSON.parse(saved);
             renderWorld();
             ui();
@@ -100,10 +97,7 @@
                 autoTick++;
                 let pct = (autoTick / limit) * 100;
                 document.getElementById('auto-ring').style.clipPath = `inset(0 ${100-pct}% 0 0)`;
-                if(autoTick >= limit) {
-                    advance();
-                    autoTick = 0;
-                }
+                if(autoTick >= limit) { advance(); autoTick = 0; }
             }
         }
 
@@ -112,25 +106,26 @@
             else {
                 state.day = 1;
                 let bonus = (state.skills.stardust || 0) * 10;
-                let power = state.lvls[state.planet].reduce((a,b)=>a+b, 0);
-                state.iso += (100 + bonus + (power * 40));
+                let power = (state.skills.tectonics||0) + (state.skills.atmosphere||0) + (state.skills.hydration||0) + (state.skills.biosphere||0) + (state.skills.civilization||0);
+                state.iso += (100 + bonus + (power * 50));
                 renderWorld();
             }
-            ui();
-            save();
+            ui(); save();
         }
 
         function renderWorld() {
             const grid = document.getElementById('grid-9x9');
             grid.innerHTML = '';
-            let p = state.lvls[state.planet];
+            let s = state.skills;
             for(let i=0; i<81; i++) {
                 let t = document.createElement('div');
                 t.className = 'tile';
-                if(i < p[4]*8) t.classList.add('s5');
-                else if(i < p[3]*12) t.classList.add('s4');
-                else if(i < p[2]*16) t.classList.add('s3');
-                else if(i < p[0]*20) t.classList.add('s1');
+                // Tile visual priority
+                if(i < (s.civilization||0)*8) t.classList.add('s5');
+                else if(i < (s.biosphere||0)*12) t.classList.add('s4');
+                else if(i < (s.hydration||0)*16) t.classList.add('s3');
+                else if(i < (s.atmosphere||0)*20) t.classList.add('s2');
+                else if(i < (s.tectonics||0)*25) t.classList.add('s1');
                 grid.appendChild(t);
             }
         }
@@ -162,7 +157,7 @@
                     <b>${s.name}</b> <span style="float:right">Lv ${lvl}/${s.max}</span><br>
                     <small style="color:#888">${s.desc}</small><br>
                     <button class="buy-btn" onclick="buy('${k}')" ${(state.iso < cost || lvl >= s.max) ? 'disabled' : ''}>
-                        ${lvl >= s.max ? 'MAXED' : cost + ' ISO'}
+                        ${lvl >= s.max ? 'MAX' : cost + ' ISO'}
                     </button>
                 </div>`;
             });
@@ -174,7 +169,6 @@
             if(state.iso >= cost && lvl < skillTree[k].max) {
                 state.iso -= cost;
                 state.skills[k] = lvl + 1;
-                if(k === 'coreMining') state.lvls[state.planet][0]++;
                 renderSkills(); ui(); save(); renderWorld();
             }
         }
@@ -182,13 +176,12 @@
         function prestige() {
             if(typeof triggerBigCrunch === "function" && triggerBigCrunch(state.iso)) {
                 state.void += parseInt(document.getElementById('pending-tokens').innerText);
-                state.iso = 0; state.day = 1; state.lvls = [[0,0,0,0,0],[0,0,0,0,0]];
-                state.skills = {}; // Only reset non-void skills
+                state.iso = 0; state.day = 1; state.skills = {}; 
                 save(); init(); tab('world');
             }
         }
 
-        function save() { localStorage.setItem('planetSim_v8_cheap', JSON.stringify(state)); }
+        function save() { localStorage.setItem('planetSim_v9', JSON.stringify(state)); }
     </script>
 </body>
 </html>
