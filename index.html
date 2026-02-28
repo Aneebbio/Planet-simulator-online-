@@ -12,176 +12,175 @@
         :root { --primary: #ed1e79; --void: #8a2be2; --bg: #050508; --card: #111420; }
         body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; }
         #resource-bar { background: #000; padding: 12px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
+        #save-indicator { width: 8px; height: 8px; border-radius: 50%; align-self: center; transition: 0.3s; }
+        .save-pulse { background: #2ed573; box-shadow: 0 0 8px #2ed573; }
+        
         #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
         #main-nav button { background: none; border: none; color: #666; font-weight: bold; cursor: pointer; font-size: 11px; }
         #main-nav button.active-nav { color: var(--primary); border-bottom: 2px solid var(--primary); }
 
-        .game-area { display: flex; flex-direction: column; align-items: center; padding: 15px; }
-        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; width: 300px; height: 300px; background: #222; border: 3px solid #333; }
-        .tile { background: #111; width: 100%; height: 100%; transition: background 0.5s; }
-        
-        /* THE VISUAL STAGES */
-        .s1 { background: #555; } /* Rock (Tectonics) */
-        .s2 { background: #8b4513; } /* Soil (Atmosphere) */
-        .s3 { background: #1e90ff; } /* Water (Hydration) */
-        .s4 { background: #2ed573; } /* Flora (Biosphere) */
-        .s5 { background: #ffa502; box-shadow: inset 0 0 5px #000; } /* City (Civilization) */
+        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; width: 300px; height: 300px; background: #222; border: 3px solid #333; margin: 20px auto; }
+        .tile { background: #111; width: 100%; height: 100%; }
+        .s1 { background: #555; } .s2 { background: #8b4513; } .s3 { background: #1e90ff; }
+        .s4 { background: #2ed573; } .s5 { background: #ffa502; box-shadow: inset 0 0 5px #000; }
 
-        .day-btn { width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--primary); background: #000; color: white; cursor: pointer; margin: 15px; font-weight: bold; position: relative; }
-        #auto-ring { position: absolute; top: -5px; left: -5px; width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--void); clip-path: inset(0 100% 0 0); transition: 0.1s linear; opacity: 0.4; pointer-events: none; }
+        .day-btn { width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--primary); background: #000; color: white; cursor: pointer; font-weight: bold; position: relative; }
+        #auto-ring { position: absolute; top: -5px; left: -5px; width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--void); clip-path: inset(0 100% 0 0); transition: 0.1s linear; opacity: 0.4; }
 
-        .buy-btn { background: var(--primary); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; }
-        .buy-btn:disabled { opacity: 0.2; }
-        .screen { display: none; }
+        .screen { display: none; padding: 10px; }
         .active-screen { display: block; }
         .card { background: var(--card); border: 1px solid #222; padding: 12px; margin: 8px auto; width: 90%; max-width: 380px; border-radius: 8px; text-align: left; }
+        .buy-btn { background: var(--primary); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; user-select: none; }
+        .buy-btn:disabled { opacity: 0.2; cursor: default; }
     </style>
 </head>
 <body onload="init()">
 
-    <div id="resource-bar">
-        <span>ISO: <b id="iso-display">0</b></span>
-        <span style="color:var(--void)">VOID: <b id="void-display">0</b></span>
+<div id="resource-bar">
+    <span>ISO: <b id="iso-display">0</b></span>
+    <span style="color:var(--void)">VOID: <b id="void-display">0</b></span>
+    <div id="save-indicator"></div>
+</div>
+
+<nav id="main-nav">
+    <button id="nav-world" class="active-nav" onclick="tab('world')">WORLD</button>
+    <button id="nav-skills" onclick="tab('skills')">UPGRADES</button>
+    <button id="nav-void" onclick="tab('void')">VOID</button>
+</nav>
+
+<section id="screen-world" class="screen active-screen">
+    <div id="grid-9x9"></div>
+    <button class="day-btn" onclick="advance()">
+        <div id="auto-ring"></div>
+        DAY <span id="day-counter">1/20</span>
+    </button>
+</section>
+
+<section id="screen-skills" class="screen">
+    <div id="skill-list"></div>
+</section>
+
+<section id="screen-void" class="screen">
+    <div class="card" style="border-color:var(--void); text-align:center;">
+        <p>Current Tokens: <b id="void-total">0</b></p>
+        <button class="buy-btn" style="background:var(--void)" onclick="prestige()">
+            BIG CRUNCH (+<span id="pending-tokens">0</span>)
+        </button>
     </div>
+</section>
 
-    <nav id="main-nav">
-        <button id="nav-world" class="active-nav" onclick="tab('world')">PLANET</button>
-        <button id="nav-skills" onclick="tab('skills')">UPGRADES</button>
-        <button id="nav-void" onclick="tab('void')">VOID</button>
-    </nav>
+<script>
+    const SAVE_KEY = "PlanetSim_V10_Final";
+    let state = { iso: 0, void: 0, day: 1, planet: 0, skills: {} };
+    let autoTick = 0, holdInterval = null;
 
-    <section id="screen-world" class="screen active-screen">
-        <div class="game-area">
-            <div id="grid-9x9"></div>
-            <button class="day-btn" onclick="advance()">
-                <div id="auto-ring"></div>
-                DAY<br><span id="day-counter">1/20</span>
-            </button>
-            <div style="width:320px; height:50px; background:#000;">
-                <div id="container-900a963ba8053c59fa04ff02450d4e12"></div>
-                <script async src="https://pl28773503.effectivegatecpm.com/900a963ba8053c59fa04ff02450d4e12/invoke.js"></script>
-            </div>
-        </div>
-    </section>
+    function init() {
+        let saved = localStorage.getItem(SAVE_KEY);
+        if(saved) state = Object.assign(state, JSON.parse(saved));
+        renderWorld(); ui();
+        setInterval(gameLoop, 1000);
+    }
 
-    <section id="screen-skills" class="screen">
-        <h3 style="margin-top:15px;">CREATION</h3>
-        <div id="skill-list"></div>
-    </section>
+    function gameLoop() {
+        let sm = state.skills.sunMoon || 0;
+        if(sm > 0) {
+            let limit = 16 - sm;
+            autoTick++;
+            let pct = (autoTick / limit) * 100;
+            document.getElementById('auto-ring').style.clipPath = `inset(0 ${100-pct}% 0 0)`;
+            if(autoTick >= limit) { advance(); autoTick = 0; }
+        }
+        if(state.skills.deepMemory > 0) save();
+    }
 
-    <section id="screen-void" class="screen">
-        <h3 style="color:var(--void); margin-top:15px;">VOID SHOP</h3>
-        <div class="card" style="border:1px solid var(--void); text-align:center;">
-            <button class="buy-btn" style="background:var(--void)" onclick="prestige()">
-                COLLAPSE FOR <span id="pending-tokens">0</span> VOID
-            </button>
-        </div>
-    </section>
-
-    <script>
-        let state = { iso: 0, void: 0, day: 1, planet: 0, skills: {} };
-        let autoTick = 0;
-
-        function init() {
-            let saved = localStorage.getItem('planetSim_v9');
-            if(saved) state = JSON.parse(saved);
+    function advance() {
+        if(state.day < 20) state.day++;
+        else {
+            state.day = 1;
+            let bonus = (state.skills.starlight || 0) * 10;
+            let power = (state.skills.tectonics||0) + (state.skills.atmosphere||0) + (state.skills.hydration||0) + (state.skills.biosphere||0) + (state.skills.civilization||0);
+            state.iso += (100 + bonus + (power * 50));
             renderWorld();
-            ui();
-            setInterval(loop, 1000);
         }
+        ui();
+    }
 
-        function loop() {
-            let sm = state.skills.sunMoon || 0;
-            if(sm > 0) {
-                let limit = 16 - sm;
-                autoTick++;
-                let pct = (autoTick / limit) * 100;
-                document.getElementById('auto-ring').style.clipPath = `inset(0 ${100-pct}% 0 0)`;
-                if(autoTick >= limit) { advance(); autoTick = 0; }
+    function buy(k) {
+        let lvl = state.skills[k] || 0;
+        let cost = calculateSkillCost(k, lvl);
+        if(state.iso >= cost && lvl < skillTree[k].max) {
+            state.iso -= cost;
+            state.skills[k] = lvl + 1;
+            renderSkills(); ui(); save(); renderWorld();
+        }
+    }
+
+    function renderWorld() {
+        const grid = document.getElementById('grid-9x9');
+        grid.innerHTML = '';
+        let s = state.skills;
+        for(let i=0; i<81; i++) {
+            let t = document.createElement('div');
+            t.className = 'tile';
+            if(i < (s.civilization||0)*8) t.classList.add('s5');
+            else if(i < (s.biosphere||0)*12) t.classList.add('s4');
+            else if(i < (s.hydration||0)*16) t.classList.add('s3');
+            else if(i < (s.atmosphere||0)*20) t.classList.add('s2');
+            else if(i < (s.tectonics||0)*25) t.classList.add('s1');
+            grid.appendChild(t);
+        }
+    }
+
+    function renderSkills() {
+        const list = document.getElementById('skill-list');
+        list.innerHTML = '';
+        Object.keys(skillTree).forEach(k => {
+            let s = skillTree[k], lvl = state.skills[k] || 0, cost = calculateSkillCost(k, lvl), isMax = lvl >= s.max;
+            let card = document.createElement('div');
+            card.className = 'card';
+            card.innerHTML = `<b>${s.name}</b> <small style="float:right">Lv ${lvl}/${s.max}</small><br><small style="color:#888">${s.desc}</small><br>
+                <button class="buy-btn" ${ (state.iso < cost || isMax) ? 'disabled' : '' }>${isMax ? 'MAXED' : cost + ' ISO'}</button>`;
+            
+            let btn = card.querySelector('button');
+            btn.onclick = () => buy(k);
+            if (state.skills.fastBuy > 0) {
+                btn.onmousedown = btn.ontouchstart = () => { holdInterval = setInterval(() => buy(k), 100); };
+                btn.onmouseup = btn.onmouseleave = btn.ontouchend = () => { clearInterval(holdInterval); };
             }
-        }
+            list.appendChild(card);
+        });
+    }
 
-        function advance() {
-            if(state.day < 20) state.day++;
-            else {
-                state.day = 1;
-                let bonus = (state.skills.stardust || 0) * 10;
-                let power = (state.skills.tectonics||0) + (state.skills.atmosphere||0) + (state.skills.hydration||0) + (state.skills.biosphere||0) + (state.skills.civilization||0);
-                state.iso += (100 + bonus + (power * 50));
-                renderWorld();
-            }
-            ui(); save();
+    function prestige() {
+        if(typeof triggerBigCrunch === "function" && triggerBigCrunch(state.iso)) {
+            state.void += getPendingTokens(state.iso);
+            state.iso = 0; state.day = 1; state.skills = {};
+            save(); location.reload();
         }
+    }
 
-        function renderWorld() {
-            const grid = document.getElementById('grid-9x9');
-            grid.innerHTML = '';
-            let s = state.skills;
-            for(let i=0; i<81; i++) {
-                let t = document.createElement('div');
-                t.className = 'tile';
-                // Tile visual priority
-                if(i < (s.civilization||0)*8) t.classList.add('s5');
-                else if(i < (s.biosphere||0)*12) t.classList.add('s4');
-                else if(i < (s.hydration||0)*16) t.classList.add('s3');
-                else if(i < (s.atmosphere||0)*20) t.classList.add('s2');
-                else if(i < (s.tectonics||0)*25) t.classList.add('s1');
-                grid.appendChild(t);
-            }
-        }
+    function ui() {
+        document.getElementById('iso-display').innerText = Math.floor(state.iso).toLocaleString();
+        document.getElementById('void-display').innerText = state.void;
+        document.getElementById('void-total').innerText = state.void;
+        document.getElementById('day-counter').innerText = state.day + "/20";
+        if(typeof getPendingTokens === "function") document.getElementById('pending-tokens').innerText = getPendingTokens(state.iso);
+    }
 
-        function tab(t) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.querySelectorAll('#main-nav button').forEach(b => b.classList.remove('active-nav'));
-            document.getElementById('screen-'+t).classList.add('active-screen');
-            document.getElementById('nav-'+t).classList.add('active-nav');
-            if(t === 'skills') renderSkills();
-        }
+    function tab(t) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+        document.querySelectorAll('#main-nav button').forEach(b => b.classList.remove('active-nav'));
+        document.getElementById('screen-'+t).classList.add('active-screen');
+        document.getElementById('nav-'+t).classList.add('active-nav');
+        if(t === 'skills') renderSkills();
+    }
 
-        function ui() {
-            document.getElementById('iso-display').innerText = Math.floor(state.iso).toLocaleString();
-            document.getElementById('void-display').innerText = state.void;
-            document.getElementById('day-counter').innerText = state.day + "/20";
-            if(typeof getPendingTokens === "function") 
-                document.getElementById('pending-tokens').innerText = getPendingTokens(state.iso);
-        }
-
-        function renderSkills() {
-            const list = document.getElementById('skill-list');
-            list.innerHTML = '';
-            Object.keys(skillTree).forEach(k => {
-                let s = skillTree[k];
-                let lvl = state.skills[k] || 0;
-                let cost = calculateSkillCost(k, lvl);
-                list.innerHTML += `<div class="card">
-                    <b>${s.name}</b> <span style="float:right">Lv ${lvl}/${s.max}</span><br>
-                    <small style="color:#888">${s.desc}</small><br>
-                    <button class="buy-btn" onclick="buy('${k}')" ${(state.iso < cost || lvl >= s.max) ? 'disabled' : ''}>
-                        ${lvl >= s.max ? 'MAX' : cost + ' ISO'}
-                    </button>
-                </div>`;
-            });
-        }
-
-        function buy(k) {
-            let lvl = state.skills[k] || 0;
-            let cost = calculateSkillCost(k, lvl);
-            if(state.iso >= cost && lvl < skillTree[k].max) {
-                state.iso -= cost;
-                state.skills[k] = lvl + 1;
-                renderSkills(); ui(); save(); renderWorld();
-            }
-        }
-
-        function prestige() {
-            if(typeof triggerBigCrunch === "function" && triggerBigCrunch(state.iso)) {
-                state.void += parseInt(document.getElementById('pending-tokens').innerText);
-                state.iso = 0; state.day = 1; state.skills = {}; 
-                save(); init(); tab('world');
-            }
-        }
-
-        function save() { localStorage.setItem('planetSim_v9', JSON.stringify(state)); }
-    </script>
+    function save() {
+        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
+        const ind = document.getElementById('save-indicator');
+        ind.classList.add('save-pulse');
+        setTimeout(() => ind.classList.remove('save-pulse'), 500);
+    }
+</script>
 </body>
 </html>
