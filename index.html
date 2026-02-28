@@ -3,14 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>God Simulator | Planet Simulator Online</title>
-    
-    <script src="upgrades/skills.js"></script>
-    <script src="prestige/void-shop.js"></script>
-
+    <title>Planet Simulator | Void Ascension</title>
     <style>
         :root { --primary: #ed1e79; --void: #8a2be2; --bg: #050508; --card: #111420; }
-        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; }
+        body { background: var(--bg); color: white; font-family: sans-serif; margin: 0; text-align: center; overflow-x: hidden; transition: box-shadow 2s; }
+        .void-aura { box-shadow: inset 0 0 50px rgba(138, 43, 226, 0.4); animation: auraPulse 4s infinite alternate; }
+        @keyframes auraPulse { 0% { box-shadow: inset 0 0 30px rgba(138, 43, 226, 0.2); } 100% { box-shadow: inset 0 0 60px rgba(138, 43, 226, 0.5); } }
+
         #resource-bar { background: #000; padding: 12px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
         #save-indicator { width: 8px; height: 8px; border-radius: 50%; align-self: center; transition: 0.3s; }
         .save-pulse { background: #2ed573; box-shadow: 0 0 8px #2ed573; }
@@ -20,18 +19,26 @@
         #main-nav button.active-nav { color: var(--primary); border-bottom: 2px solid var(--primary); }
 
         #grid-9x9 { display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; width: 300px; height: 300px; background: #222; border: 3px solid #333; margin: 20px auto; }
-        .tile { background: #111; width: 100%; height: 100%; }
+        .tile { background: #111; width: 100%; height: 100%; transition: 0.2s; }
         .s1 { background: #555; } .s2 { background: #8b4513; } .s3 { background: #1e90ff; }
         .s4 { background: #2ed573; } .s5 { background: #ffa502; box-shadow: inset 0 0 5px #000; }
+        .ghost { background: var(--void) !important; box-shadow: 0 0 15px var(--primary); animation: ghostPulse 1s infinite alternate; cursor: pointer; }
+        @keyframes ghostPulse { from { opacity: 0.5; } to { opacity: 1; } }
 
-        .day-btn { width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--primary); background: #000; color: white; cursor: pointer; font-weight: bold; position: relative; }
-        #auto-ring { position: absolute; top: -5px; left: -5px; width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--void); clip-path: inset(0 100% 0 0); transition: 0.1s linear; opacity: 0.4; }
+        .day-btn { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--primary); background: #000; color: white; cursor: pointer; position: relative; font-weight: bold; }
+        #auto-ring { position: absolute; top: -4px; left: -4px; width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--void); clip-path: inset(0 100% 0 0); opacity: 0.5; }
 
-        .screen { display: none; padding: 10px; }
+        .screen { display: none; padding: 10px; padding-bottom: 80px; }
         .active-screen { display: block; }
-        .card { background: var(--card); border: 1px solid #222; padding: 12px; margin: 8px auto; width: 90%; max-width: 380px; border-radius: 8px; text-align: left; }
-        .buy-btn { background: var(--primary); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; user-select: none; }
+        .card { background: var(--card); border: 1px solid #222; padding: 12px; margin: 8px auto; width: 90%; max-width: 400px; border-radius: 8px; text-align: left; }
+        .buy-btn { background: var(--primary); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; }
         .buy-btn:disabled { opacity: 0.2; cursor: default; }
+
+        #message-box { position: fixed; bottom: 85px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); border: 1px solid var(--primary); padding: 8px 15px; border-radius: 20px; font-size: 11px; opacity: 0; transition: 0.4s; pointer-events: none; z-index: 2000; }
+        .msg-active { opacity: 1 !important; bottom: 95px !important; }
+
+        #screen-log { background: rgba(5,5,8,0.98); position: fixed; top: 50px; left: 0; width: 100%; height: calc(100% - 50px); z-index: 1500; display: none; overflow-y: auto; }
+        .log-entry { border-left: 2px solid var(--primary); background: #111420; margin: 5px auto; padding: 8px; width: 85%; font-size: 11px; text-align: left; }
     </style>
 </head>
 <body onload="init()">
@@ -39,12 +46,14 @@
 <div id="resource-bar">
     <span>ISO: <b id="iso-display">0</b></span>
     <span style="color:var(--void)">VOID: <b id="void-display">0</b></span>
+    <button id="mute-btn" onclick="toggleAudio()" style="background:none; border:none; color:var(--void); display:none;">🔈</button>
     <div id="save-indicator"></div>
 </div>
 
 <nav id="main-nav">
     <button id="nav-world" class="active-nav" onclick="tab('world')">WORLD</button>
     <button id="nav-skills" onclick="tab('skills')">UPGRADES</button>
+    <button id="nav-log" onclick="toggleLog()">NEWS</button>
     <button id="nav-void" onclick="tab('void')">VOID</button>
 </nav>
 
@@ -56,130 +65,237 @@
     </button>
 </section>
 
-<section id="screen-skills" class="screen">
-    <div id="skill-list"></div>
-</section>
+<section id="screen-skills" class="screen"><div id="skill-list"></div></section>
 
 <section id="screen-void" class="screen">
     <div class="card" style="border-color:var(--void); text-align:center;">
-        <p>Current Tokens: <b id="void-total">0</b></p>
-        <button class="buy-btn" style="background:var(--void)" onclick="prestige()">
-            BIG CRUNCH (+<span id="pending-tokens">0</span>)
-        </button>
+        <p>Pending: <b id="pending-tokens">0</b> | Total: <b id="void-total-display">0</b></p>
+        <button class="buy-btn" style="background:var(--void)" onclick="prestige()">BIG CRUNCH</button>
     </div>
+    <div id="void-upgrade-list"></div>
 </section>
 
-<script>
-    const SAVE_KEY = "PlanetSim_V10_Final";
-    let state = { iso: 0, void: 0, day: 1, planet: 0, skills: {} };
-    let autoTick = 0, holdInterval = null;
+<section id="screen-log">
+    <h3 style="color:var(--primary); margin-top:20px;">CHRONICLE</h3>
+    <div id="void-controls" style="display:none; padding:15px; background:#000; margin:10px auto; width:80%; border-radius:10px;">
+        <label>Volume</label> <input type="range" id="vol-slider" min="0" max="0.1" step="0.01" value="0.03" oninput="updateAudio()"><br>
+        <label>Pitch</label> <input type="range" id="pitch-slider" min="40" max="80" step="1" value="55" oninput="updateAudio()">
+    </div>
+    <div id="log-list"></div>
+    <button class="buy-btn" style="width:100px;" onclick="toggleLog()">CLOSE</button>
+</section>
 
+<div id="message-box"></div>
+
+<script>
+    // --- DATA ---
+    const skillTree = {
+        tectonics: { name: "Tectonics", desc: "Rock tiles.", baseCost: 50, max: 25, cat: "evo", story: "Mountains rise." },
+        atmosphere: { name: "Atmosphere", desc: "Soil unlock.", baseCost: 200, max: 20, cat: "evo", story: "Clouds form." },
+        hydration: { name: "Hydration", desc: "Water basins.", baseCost: 1000, max: 20, cat: "evo", story: "Great rains fall." },
+        biosphere: { name: "Biosphere", desc: "Flora tiles.", baseCost: 5000, max: 20, cat: "evo", story: "Greenery spreads." },
+        civilization: { name: "Civilization", desc: "MegaCities.", baseCost: 25000, max: 15, cat: "evo", story: "Fires are lit." },
+        sunMoon: { name: "Sun & Moon", desc: "Auto-skip days.", baseCost: 25, max: 15, cat: "skill" },
+        deepMemory: { name: "Deep Memory", desc: "Auto-save 5s.", baseCost: 150, max: 1, cat: "skill" },
+        deepRoots: { name: "Deep Roots", desc: "Offline income.", baseCost: 800, max: 10, cat: "skill" },
+        fastBuy: { name: "Rapid Growth", desc: "Hold to buy.", baseCost: 500, max: 1, cat: "skill" }
+    };
+
+    const voidTree = {
+        spectralLens: { name: "Spectral Lens", desc: "Ghost rate 5%.", cost: 2, max: 1 },
+        voidMagnet: { name: "Void Magnet", desc: "Auto-ghost collect.", cost: 5, max: 1 },
+        eternalCore: { name: "Eternal Core", desc: "Keep 10% ISO on reset.", cost: 3, max: 5 },
+        wormhole: { name: "Wormhole", desc: "Start at later days.", cost: 1, max: 10 }
+    };
+
+    let state = { iso: 0, void: 0, day: 1, prestigeCount: 0, skills: {}, voidSkills: {}, lastSeen: Date.now(), unlocked: {} };
+    let autoTick = 0, holdInterval = null, worldLog = [], audioCtx = null, osc1, osc2, gainN;
+
+    // --- CORE ---
     function init() {
-        let saved = localStorage.getItem(SAVE_KEY);
+        let saved = localStorage.getItem("PlanetSim_Master");
         if(saved) state = Object.assign(state, JSON.parse(saved));
-        renderWorld(); ui();
+        calculateOffline(); renderWorld(); ui(); checkAura();
         setInterval(gameLoop, 1000);
     }
 
     function gameLoop() {
         let sm = state.skills.sunMoon || 0;
         if(sm > 0) {
-            let limit = 16 - sm;
             autoTick++;
-            let pct = (autoTick / limit) * 100;
-            document.getElementById('auto-ring').style.clipPath = `inset(0 ${100-pct}% 0 0)`;
+            let limit = 16 - sm;
+            document.getElementById('auto-ring').style.clipPath = `inset(0 ${100-(autoTick/limit)*100}% 0 0)`;
             if(autoTick >= limit) { advance(); autoTick = 0; }
         }
         if(state.skills.deepMemory > 0) save();
     }
 
     function advance() {
-        if(state.day < 20) state.day++;
-        else {
-            state.day = 1;
+        if(state.day < 20) {
+            state.day++;
+            if(Math.random() < 0.05) renderWorld();
+        } else {
+            state.day = 1 + (state.voidSkills.wormhole || 0);
             let bonus = (state.skills.starlight || 0) * 10;
-            let power = (state.skills.tectonics||0) + (state.skills.atmosphere||0) + (state.skills.hydration||0) + (state.skills.biosphere||0) + (state.skills.civilization||0);
-            state.iso += (100 + bonus + (power * 50));
+            let pwr = Object.values(state.skills).reduce((a,b)=>a+b, 0);
+            state.iso += (100 + bonus + (pwr * 50));
             renderWorld();
         }
+        if(state.voidSkills.voidMagnet > 0) { let g = document.querySelector('.ghost'); if(g) g.click(); }
         ui();
     }
 
+    // --- SYSTEMS ---
     function buy(k) {
         let lvl = state.skills[k] || 0;
-        let cost = calculateSkillCost(k, lvl);
+        let cost = Math.floor(skillTree[k].baseCost * Math.pow(skillTree[k].cat==="skill"?1.45:2.1, lvl));
         if(state.iso >= cost && lvl < skillTree[k].max) {
-            state.iso -= cost;
-            state.skills[k] = lvl + 1;
-            renderSkills(); ui(); save(); renderWorld();
+            state.iso -= cost; state.skills[k] = lvl + 1;
+            if(lvl === 0 && skillTree[k].story) addLog(`🌟 ${skillTree[k].story}`);
+            else addLog(`${skillTree[k].name} Level ${lvl+1}`);
+            checkSecrets(); renderSkills(); ui(); save(); renderWorld();
+        }
+    }
+
+    function prestige() {
+        let earned = Math.floor(Math.sqrt(state.iso / 1000000));
+        if(earned >= 1) {
+            let keep = state.iso * ((state.voidSkills.eternalCore||0)*0.1);
+            state.void += earned; state.prestigeCount++; state.iso = keep;
+            state.day = 1; state.skills = {}; state.unlocked = {};
+            save(); location.reload();
         }
     }
 
     function renderWorld() {
-        const grid = document.getElementById('grid-9x9');
-        grid.innerHTML = '';
+        const grid = document.getElementById('grid-9x9'); grid.innerHTML = '';
         let s = state.skills;
+        let ghostIdx = (state.prestigeCount > 2 && Math.random() < (state.voidSkills.spectralLens?0.05:0.01)) ? Math.floor(Math.random()*81) : -1;
         for(let i=0; i<81; i++) {
-            let t = document.createElement('div');
-            t.className = 'tile';
-            if(i < (s.civilization||0)*8) t.classList.add('s5');
-            else if(i < (s.biosphere||0)*12) t.classList.add('s4');
-            else if(i < (s.hydration||0)*16) t.classList.add('s3');
-            else if(i < (s.atmosphere||0)*20) t.classList.add('s2');
-            else if(i < (s.tectonics||0)*25) t.classList.add('s1');
+            let t = document.createElement('div'); t.className = 'tile';
+            if(i === ghostIdx) { t.classList.add('ghost'); t.onclick = () => { state.iso += state.prestigeCount*1000; addLog("👻 Void Echo found!"); renderWorld(); }; }
+            else {
+                if(i < (s.civilization||0)*8) t.classList.add('s5');
+                else if(i < (s.biosphere||0)*12) t.classList.add('s4');
+                else if(i < (s.hydration||0)*16) t.classList.add('s3');
+                else if(i < (s.atmosphere||0)*20) t.classList.add('s2');
+                else if(i < (s.tectonics||0)*25) t.classList.add('s1');
+            }
             grid.appendChild(t);
         }
     }
 
-    function renderSkills() {
-        const list = document.getElementById('skill-list');
-        list.innerHTML = '';
-        Object.keys(skillTree).forEach(k => {
-            let s = skillTree[k], lvl = state.skills[k] || 0, cost = calculateSkillCost(k, lvl), isMax = lvl >= s.max;
-            let card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `<b>${s.name}</b> <small style="float:right">Lv ${lvl}/${s.max}</small><br><small style="color:#888">${s.desc}</small><br>
-                <button class="buy-btn" ${ (state.iso < cost || isMax) ? 'disabled' : '' }>${isMax ? 'MAXED' : cost + ' ISO'}</button>`;
-            
-            let btn = card.querySelector('button');
-            btn.onclick = () => buy(k);
-            if (state.skills.fastBuy > 0) {
-                btn.onmousedown = btn.ontouchstart = () => { holdInterval = setInterval(() => buy(k), 100); };
-                btn.onmouseup = btn.onmouseleave = btn.ontouchend = () => { clearInterval(holdInterval); };
-            }
-            list.appendChild(card);
-        });
+    // --- UI/UX ---
+    function addLog(msg) {
+        let time = new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+        worldLog.unshift({time, msg}); if(worldLog.length > 20) worldLog.pop();
+        const box = document.getElementById('message-box');
+        box.innerText = msg; box.classList.add('msg-active');
+        setTimeout(()=>box.classList.remove('msg-active'), 3000);
     }
 
-    function prestige() {
-        if(typeof triggerBigCrunch === "function" && triggerBigCrunch(state.iso)) {
-            state.void += getPendingTokens(state.iso);
-            state.iso = 0; state.day = 1; state.skills = {};
-            save(); location.reload();
-        }
+    function checkSecrets() {
+        let s = state.skills;
+        if(s.hydration>=5 && s.biosphere>=5 && !state.unlocked.oasis) { addLog("🌿 SECRET: The Oasis formed."); state.unlocked.oasis=true; }
     }
 
     function ui() {
         document.getElementById('iso-display').innerText = Math.floor(state.iso).toLocaleString();
         document.getElementById('void-display').innerText = state.void;
-        document.getElementById('void-total').innerText = state.void;
+        document.getElementById('void-total-display').innerText = state.void;
         document.getElementById('day-counter').innerText = state.day + "/20";
-        if(typeof getPendingTokens === "function") document.getElementById('pending-tokens').innerText = getPendingTokens(state.iso);
-    }
-
-    function tab(t) {
-        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-        document.querySelectorAll('#main-nav button').forEach(b => b.classList.remove('active-nav'));
-        document.getElementById('screen-'+t).classList.add('active-screen');
-        document.getElementById('nav-'+t).classList.add('active-nav');
-        if(t === 'skills') renderSkills();
+        document.getElementById('pending-tokens').innerText = Math.floor(Math.sqrt(state.iso / 1000000));
     }
 
     function save() {
-        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-        const ind = document.getElementById('save-indicator');
-        ind.classList.add('save-pulse');
-        setTimeout(() => ind.classList.remove('save-pulse'), 500);
+        state.lastSeen = Date.now();
+        localStorage.setItem("PlanetSim_Master", JSON.stringify(state));
+        document.getElementById('save-indicator').classList.add('save-pulse');
+        setTimeout(()=>document.getElementById('save-indicator').classList.remove('save-pulse'), 500);
+    }
+
+    function calculateOffline() {
+        let dr = state.skills.deepRoots || 0;
+        let away = Math.floor((Date.now() - state.lastSeen)/1000);
+        if(away > 120 && dr > 0) {
+            let earned = Math.min(away, 86400) * (2 + dr * 3);
+            state.iso += earned; addLog(`🌙 Offline: +${earned.toLocaleString()} ISO`);
+        }
+    }
+
+    // --- AUDIO ---
+    function toggleAudio() {
+        if(!audioCtx) {
+            audioCtx = new AudioContext(); gainN = audioCtx.createGain();
+            gainN.gain.value = 0.03; gainN.connect(audioCtx.destination);
+            osc1 = audioCtx.createOscillator(); osc2 = audioCtx.createOscillator();
+            osc1.connect(gainN); osc2.connect(gainN);
+            osc1.start(); osc2.start(); updateAudio();
+            document.getElementById('mute-btn').innerText = "🔊";
+        } else { audioCtx.close(); audioCtx = null; document.getElementById('mute-btn').innerText = "🔈"; }
+    }
+    function updateAudio() {
+        if(!audioCtx) return;
+        let f = parseFloat(document.getElementById('pitch-slider').value);
+        gainN.gain.setTargetAtTime(document.getElementById('vol-slider').value, audioCtx.currentTime, 0.1);
+        osc1.frequency.setTargetAtTime(f, audioCtx.currentTime, 0.1);
+        osc2.frequency.setTargetAtTime(f+0.5, audioCtx.currentTime, 0.1);
+    }
+
+    function checkAura() {
+        let spent = Object.entries(state.voidSkills).reduce((a,[k,v])=>a+(v*voidTree[k].cost), 0);
+        if(spent >= 5) { 
+            document.body.classList.add('void-aura'); 
+            document.getElementById('mute-btn').style.display="inline"; 
+            document.getElementById('void-controls').style.display="block";
+        }
+    }
+
+    function tab(t) {
+        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen'));
+        document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active-nav'));
+        document.getElementById('screen-'+t).classList.add('active-screen');
+        document.getElementById('nav-'+t).classList.add('active-nav');
+        if(t==='skills') renderSkills(); if(t==='void') renderVoidShop();
+    }
+
+    function renderSkills() {
+        const list = document.getElementById('skill-list'); list.innerHTML = '';
+        Object.keys(skillTree).forEach(k=>{
+            let s = skillTree[k], lvl = state.skills[k]||0, isMax = lvl>=s.max;
+            let cost = Math.floor(s.baseCost * Math.pow(s.cat==="skill"?1.45:2.1, lvl));
+            let card = document.createElement('div'); card.className = 'card';
+            card.innerHTML = `<b>${s.name}</b> <small style="float:right">Lv ${lvl}/${s.max}</small><br><small style="color:#888">${s.desc}</small><br>
+                <button class="buy-btn" ${ (state.iso < cost || isMax) ? 'disabled' : '' }>${isMax ? 'MAX' : cost}</button>`;
+            let btn = card.querySelector('button'); btn.onclick = () => buy(k);
+            if(state.skills.fastBuy) { 
+                btn.onmousedown = btn.ontouchstart = () => { holdInterval = setInterval(()=>buy(k), 100); };
+                btn.onmouseup = btn.onmouseleave = btn.ontouchend = () => clearInterval(holdInterval);
+            }
+            list.appendChild(card);
+        });
+    }
+
+    function renderVoidShop() {
+        const list = document.getElementById('void-upgrade-list'); list.innerHTML = '';
+        Object.keys(voidTree).forEach(k=>{
+            let v = voidTree[k], lvl = state.voidSkills[k]||0, cost = v.cost + (lvl*v.cost), isMax = lvl>=v.max;
+            list.innerHTML += `<div class="card" style="border-left:3px solid var(--void)"><b>${v.name}</b> <small style="float:right">Lv ${lvl}/${v.max}</small><br>
+                <small style="color:#888">${v.desc}</small><br><button class="buy-btn" style="background:var(--void)" onclick="buyVoid('${k}')" ${ (state.void < cost || isMax) ? 'disabled' : '' }>${isMax ? 'MAX' : cost + ' VOID'}</button></div>`;
+        });
+    }
+
+    function buyVoid(k) {
+        let lvl = state.voidSkills[k]||0, cost = voidTree[k].cost + (lvl*voidTree[k].cost);
+        if(state.void >= cost && lvl < voidTree[k].max) { state.void -= cost; state.voidSkills[k] = lvl+1; checkAura(); renderVoidShop(); ui(); save(); }
+    }
+
+    function toggleLog() {
+        const log = document.getElementById('screen-log');
+        log.style.display = (log.style.display === 'block') ? 'none' : 'block';
+        if(log.style.display==='block') {
+            document.getElementById('log-list').innerHTML = worldLog.map(e=>`<div class="log-entry"><span style="color:#555">${e.time}</span> ${e.msg}</div>`).join('');
+        }
     }
 </script>
 </body>
