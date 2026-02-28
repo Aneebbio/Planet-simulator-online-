@@ -1,46 +1,37 @@
-// upgrades/skills.js - Modular Skill Tree Logic
+// upgrades/skills.js - Updated with Cheap Starter Skills
 const skillTree = {
-    // PATH 1: BIOLOGY (Green - Efficiency)
-    photosynthesis: { 
-        name: "Photosynthesis", 
-        desc: "Each Flora tile reduces Day length by 1%", 
-        baseCost: 500, 
-        max: 10,
-        apply: (lv) => { /* Logic to reduce timer */ }
+    sunMoon: { 
+        name: "Sun & Moon", 
+        desc: "Automates time. Skips 1 day every (16 - Level) seconds.", 
+        baseCost: 25, 
+        max: 15,
+        type: "auto"
     },
-    mutation: { 
-        name: "Rapid Mutation", 
-        desc: "5% chance a tile evolves 2 stages at once", 
-        baseCost: 2500, 
-        max: 5 
+    stardust: { 
+        name: "Starlight Dust", 
+        desc: "Adds +10 to every Isotope harvest.", 
+        baseCost: 10, 
+        max: 50,
+        type: "passive"
     },
-
-    // PATH 2: INDUSTRY (Grey - Raw Power)
+    gravity: { 
+        name: "Gravity Pull", 
+        desc: "Reduces cost of other skills by 2% per level.", 
+        baseCost: 100, 
+        max: 20,
+        type: "meta"
+    },
     coreMining: { 
-        name: "Deep Core Mining", 
-        desc: "Rock tiles produce +5 Isotopes per day", 
-        baseCost: 1000, 
-        max: 10 
-    },
-    automation: { 
-        name: "Auto-Foundry", 
-        desc: "Automatically clicks 'Advance Day' every 10s", 
-        baseCost: 10000, 
-        max: 1 
-    },
-
-    // PATH 3: STRATEGY (Gold - Synergy)
-    urbanPlanning: { 
-        name: "Urban Planning", 
-        desc: "Cities next to each other give 20% more ISO", 
-        baseCost: 5000, 
-        max: 5 
+        name: "Core Mining", 
+        desc: "Increases Rock tile output by 5.", 
+        baseCost: 150, 
+        max: 25,
+        type: "visual"
     }
 };
 
-function calculateSkillCost(skillKey, currentLevel) {
-    let skill = skillTree[skillKey];
-    return Math.floor(skill.baseCost * Math.pow(2.5, currentLevel));
+function calculateSkillCost(key, lvl) {
+    let s = skillTree[key];
+    // Cheap scaling: 1.4x increase instead of 2.5x
+    return Math.floor(s.baseCost * Math.pow(1.45, lvl));
 }
-
-console.log("Skill Tree Module Loaded: Optimized for low-power browsers.");
