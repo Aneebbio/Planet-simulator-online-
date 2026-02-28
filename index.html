@@ -4,202 +4,191 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="google-site-verification" content="google4075c778cb17a8fc" />
-    
     <title>God Simulator | Planet Simulator Online</title>
-    <meta name="description" content="A low-power, high-depth planet evolution simulator. Build, prestige, and conquer the void.">
-
+    
     <script src="upgrades/skills.js"></script>
     <script src="prestige/void-shop.js"></script>
 
     <style>
         :root { --primary: #ed1e79; --void: #8a2be2; --bg: #050508; --card: #111420; }
-        body { background: var(--bg); color: white; font-family: 'Segoe UI', system-ui, sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; margin: 0; text-align: center; }
         
-        /* PERFORMANCE OPTIMIZED BAR */
-        #resource-bar { background: #000; padding: 10px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; font-size: 14px; }
-        .void-text { color: var(--void); font-weight: bold; }
-
-        /* NAVIGATION */
+        #resource-bar { background: #000; padding: 12px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
         #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
-        #main-nav button { background: none; border: none; color: #888; cursor: pointer; font-weight: bold; font-size: 12px; transition: 0.2s; }
+        #main-nav button { background: none; border: none; color: #666; font-weight: bold; cursor: pointer; font-size: 11px; }
         #main-nav button.active-nav { color: var(--primary); border-bottom: 2px solid var(--primary); }
 
-        /* GAME GRID (Low Power) */
-        .game-area { display: flex; flex-direction: column; align-items: center; padding: 20px; }
-        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; width: 300px; height: 300px; background: #222; border: 4px solid #333; }
-        .tile { background: #1a1a1a; width: 100%; height: 100%; }
+        .game-area { display: flex; flex-direction: column; align-items: center; padding: 15px; }
+        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; width: 300px; height: 300px; background: #222; border: 3px solid #333; }
+        .tile { background: #111; width: 100%; height: 100%; }
         
-        /* STAGES - Using CSS instead of Images for Speed */
-        .s1 { background: #444; } /* Rock */
-        .s2 { background: #a52a2a; } /* Mars-like */
-        .s3 { background: #0000ff; } /* Water */
-        .s4 { background: #228b22; } /* Life */
-        .s5 { background: #ffd700; box-shadow: inset 0 0 5px #fff; } /* City */
+        /* Stages */
+        .s1 { background: #555; } .s2 { background: #8b4513; } .s3 { background: #1e90ff; }
+        .s4 { background: #2ed573; } .s5 { background: #ffa502; box-shadow: inset 0 0 5px #000; }
 
-        /* BUTTONS */
-        .big-btn { width: 120px; height: 120px; border-radius: 50%; border: 4px solid var(--primary); background: #000; color: white; cursor: pointer; margin: 20px; font-weight: bold; }
-        .big-btn:active { transform: scale(0.9); }
-        .buy-btn { background: var(--primary); border: none; color: white; padding: 10px; border-radius: 4px; cursor: pointer; width: 100%; }
-        .buy-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+        .day-btn { width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--primary); background: #000; color: white; cursor: pointer; margin: 15px; font-weight: bold; position: relative; }
+        
+        /* Auto-progress ring */
+        #auto-ring { position: absolute; top: -5px; left: -5px; width: 120px; height: 120px; border-radius: 50%; border: 5px solid var(--void); clip-path: inset(0 100% 0 0); transition: 0.1s linear; opacity: 0.5; }
 
-        .screen { display: none; padding-bottom: 50px; }
+        .buy-btn { background: var(--primary); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; }
+        .buy-btn:disabled { opacity: 0.2; }
+
+        .screen { display: none; }
         .active-screen { display: block; }
-        .card { background: var(--card); border: 1px solid #333; padding: 15px; margin: 10px auto; width: 90%; max-width: 400px; border-radius: 8px; }
+        .card { background: var(--card); border: 1px solid #222; padding: 12px; margin: 8px auto; width: 90%; max-width: 380px; border-radius: 8px; text-align: left; }
     </style>
 </head>
-<body onload="initGame()">
+<body onload="init()">
 
     <div id="resource-bar">
         <span>ISO: <b id="iso-display">0</b></span>
-        <span class="void-text">VOID: <b id="void-display">0</b></span>
+        <span style="color:var(--void)">VOID: <b id="void-display">0</b></span>
     </div>
 
     <nav id="main-nav">
         <button id="nav-world" class="active-nav" onclick="tab('world')">WORLD</button>
-        <button id="nav-skills" onclick="tab('skills')">SKILLS</button>
+        <button id="nav-skills" onclick="tab('skills')">UPGRADES</button>
         <button id="nav-void" onclick="tab('void')">VOID</button>
     </nav>
 
     <section id="screen-world" class="screen active-screen">
         <div class="game-area">
             <div id="grid-9x9"></div>
-            <button class="big-btn" onclick="doDay()">ADVANCE DAY<br><small id="day-counter">1/20</small></button>
-            <div id="planet-tabs">
-                <button onclick="changePlanet(0)">EARTH</button>
-                <button onclick="changePlanet(1)">MARS</button>
+            <button class="day-btn" onclick="advance()">
+                <div id="auto-ring"></div>
+                DAY<br><span id="day-counter">1/20</span>
+            </button>
+            
+            <div id="ad-block" style="width:320px; height:50px; background:#000; border:1px solid #222;">
+                <div id="container-900a963ba8053c59fa04ff02450d4e12"></div>
+                <script async src="https://pl28773503.effectivegatecpm.com/900a963ba8053c59fa04ff02450d4e12/invoke.js"></script>
             </div>
         </div>
     </section>
 
     <section id="screen-skills" class="screen">
-        <h2>SKILL TREE</h2>
+        <h3 style="margin-top:15px;">CREATION LAB</h3>
         <div id="skill-list"></div>
     </section>
 
     <section id="screen-void" class="screen">
-        <h2 style="color:var(--void)">THE BIG CRUNCH</h2>
-        <div class="card" style="border-color:var(--void)">
-            <p>Collapsing the universe grants Void Tokens based on total Isotopes.</p>
-            <button class="buy-btn" style="background:var(--void)" onclick="crunch()">CRUNCH FOR <span id="pending-tokens">0</span> TOKENS</button>
+        <h3 style="color:var(--void); margin-top:15px;">THE BIG CRUNCH</h3>
+        <div class="card" style="border:1px solid var(--void); text-align:center;">
+            <button class="buy-btn" style="background:var(--void)" onclick="prestige()">
+                RESET FOR <span id="pending-tokens">0</span> VOID TOKENS
+            </button>
         </div>
-        <div id="void-upgrades"></div>
     </section>
 
     <script>
-        // CORE STATE
-        let g = {
-            iso: 0,
-            void: 0,
-            day: 1,
-            planet: 0,
-            levels: [[0,0,0,0,0],[0,0,0,0,0]], // Simplified for low power
-            skills: {}
-        };
+        let state = { iso: 0, void: 0, day: 1, planet: 0, lvls: [[0,0,0,0,0],[0,0,0,0,0]], skills: {} };
+        let autoTick = 0;
 
-        function initGame() {
-            load();
-            renderGrid();
-            updateUI();
+        function init() {
+            let saved = localStorage.getItem('planetSim_v8_cheap');
+            if(saved) state = JSON.parse(saved);
+            renderWorld();
+            ui();
+            setInterval(loop, 1000);
         }
 
-        function doDay() {
-            if(g.day < 20) {
-                g.day++;
-            } else {
-                g.day = 1;
-                let harvest = 100 + (g.levels[g.planet].reduce((a,b)=>a+b, 0) * 50);
-                g.iso += harvest;
-            }
-            updateUI();
-            save();
-        }
-
-        function renderGrid() {
-            const grid = document.getElementById('grid-9x9');
-            grid.innerHTML = '';
-            let pLvl = g.levels[g.planet];
-            for(let i=0; i<81; i++) {
-                let div = document.createElement('div');
-                div.className = 'tile';
-                // Logic to show evolution based on levels
-                if(i < pLvl[4]*10) div.classList.add('s5');
-                else if(i < pLvl[3]*15) div.classList.add('s4');
-                else if(i < pLvl[2]*20) div.classList.add('s3');
-                else if(i < pLvl[0]*25) div.classList.add('s1');
-                grid.appendChild(div);
-            }
-        }
-
-        function tab(name) {
-            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
-            document.querySelectorAll('#main-nav button').forEach(b => b.classList.remove('active-nav'));
-            document.getElementById('screen-'+name).classList.add('active-screen');
-            document.getElementById('nav-'+name).classList.add('active-nav');
-            if(name === 'skills') renderSkills();
-        }
-
-        function updateUI() {
-            document.getElementById('iso-display').innerText = Math.floor(g.iso).toLocaleString();
-            document.getElementById('void-display').innerText = g.void;
-            document.getElementById('day-counter').innerText = g.day + "/20";
-            
-            // Connect to void-shop.js logic
-            if(typeof getPendingTokens === "function") {
-                document.getElementById('pending-tokens').innerText = getPendingTokens(g.iso);
-            }
-        }
-
-        function crunch() {
-            if(typeof triggerBigCrunch === "function") {
-                if(triggerBigCrunch(g.iso)) {
-                    g.void += parseInt(document.getElementById('pending-tokens').innerText);
-                    g.iso = 0; g.day = 1; g.levels = [[0,0,0,0,0],[0,0,0,0,0]];
-                    save(); initGame(); tab('world');
+        function loop() {
+            let sm = state.skills.sunMoon || 0;
+            if(sm > 0) {
+                let limit = 16 - sm;
+                autoTick++;
+                let pct = (autoTick / limit) * 100;
+                document.getElementById('auto-ring').style.clipPath = `inset(0 ${100-pct}% 0 0)`;
+                if(autoTick >= limit) {
+                    advance();
+                    autoTick = 0;
                 }
             }
         }
 
-        // LOW POWER SAVE SYSTEM
-        function save() { localStorage.setItem('planetSim_v8', JSON.stringify(g)); }
-        function load() { 
-            let data = localStorage.getItem('planetSim_v8');
-            if(data) g = JSON.parse(data);
+        function advance() {
+            if(state.day < 20) state.day++;
+            else {
+                state.day = 1;
+                let bonus = (state.skills.stardust || 0) * 10;
+                let power = state.lvls[state.planet].reduce((a,b)=>a+b, 0);
+                state.iso += (100 + bonus + (power * 40));
+                renderWorld();
+            }
+            ui();
+            save();
         }
 
-        // Skill rendering logic (links to upgrades/skills.js)
-        function renderSkills() {
-            const container = document.getElementById('skill-list');
-            container.innerHTML = '';
-            if(typeof skillTree === "undefined") {
-                container.innerHTML = "<p>Loading skills.js...</p>";
-                return;
+        function renderWorld() {
+            const grid = document.getElementById('grid-9x9');
+            grid.innerHTML = '';
+            let p = state.lvls[state.planet];
+            for(let i=0; i<81; i++) {
+                let t = document.createElement('div');
+                t.className = 'tile';
+                if(i < p[4]*8) t.classList.add('s5');
+                else if(i < p[3]*12) t.classList.add('s4');
+                else if(i < p[2]*16) t.classList.add('s3');
+                else if(i < p[0]*20) t.classList.add('s1');
+                grid.appendChild(t);
             }
-            Object.keys(skillTree).forEach(key => {
-                let s = skillTree[key];
-                let lvl = g.skills[key] || 0;
-                let cost = calculateSkillCost(key, lvl);
-                container.innerHTML += `
-                    <div class="card">
-                        <b>${s.name}</b> (Lvl ${lvl})<br>
-                        <small>${s.desc}</small><br><br>
-                        <button class="buy-btn" onclick="buySkill('${key}')" ${g.iso < cost ? 'disabled' : ''}>
-                            Upgrade: ${cost} ISO
-                        </button>
-                    </div>`;
+        }
+
+        function tab(t) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.querySelectorAll('#main-nav button').forEach(b => b.classList.remove('active-nav'));
+            document.getElementById('screen-'+t).classList.add('active-screen');
+            document.getElementById('nav-'+t).classList.add('active-nav');
+            if(t === 'skills') renderSkills();
+        }
+
+        function ui() {
+            document.getElementById('iso-display').innerText = Math.floor(state.iso).toLocaleString();
+            document.getElementById('void-display').innerText = state.void;
+            document.getElementById('day-counter').innerText = state.day + "/20";
+            if(typeof getPendingTokens === "function") 
+                document.getElementById('pending-tokens').innerText = getPendingTokens(state.iso);
+        }
+
+        function renderSkills() {
+            const list = document.getElementById('skill-list');
+            list.innerHTML = '';
+            Object.keys(skillTree).forEach(k => {
+                let s = skillTree[k];
+                let lvl = state.skills[k] || 0;
+                let cost = calculateSkillCost(k, lvl);
+                list.innerHTML += `<div class="card">
+                    <b>${s.name}</b> <span style="float:right">Lv ${lvl}/${s.max}</span><br>
+                    <small style="color:#888">${s.desc}</small><br>
+                    <button class="buy-btn" onclick="buy('${k}')" ${(state.iso < cost || lvl >= s.max) ? 'disabled' : ''}>
+                        ${lvl >= s.max ? 'MAXED' : cost + ' ISO'}
+                    </button>
+                </div>`;
             });
         }
 
-        function buySkill(key) {
-            let lvl = g.skills[key] || 0;
-            let cost = calculateSkillCost(key, lvl);
-            if(g.iso >= cost) {
-                g.iso -= cost;
-                g.skills[key] = lvl + 1;
-                // Update planet levels based on skill type
-                if(key === 'photosynthesis') g.levels[g.planet][3]++; 
-                renderSkills(); updateUI(); save(); renderGrid();
+        function buy(k) {
+            let lvl = state.skills[k] || 0;
+            let cost = calculateSkillCost(k, lvl);
+            if(state.iso >= cost && lvl < skillTree[k].max) {
+                state.iso -= cost;
+                state.skills[k] = lvl + 1;
+                if(k === 'coreMining') state.lvls[state.planet][0]++;
+                renderSkills(); ui(); save(); renderWorld();
             }
         }
+
+        function prestige() {
+            if(typeof triggerBigCrunch === "function" && triggerBigCrunch(state.iso)) {
+                state.void += parseInt(document.getElementById('pending-tokens').innerText);
+                state.iso = 0; state.day = 1; state.lvls = [[0,0,0,0,0],[0,0,0,0,0]];
+                state.skills = {}; // Only reset non-void skills
+                save(); init(); tab('world');
+            }
+        }
+
+        function save() { localStorage.setItem('planetSim_v8_cheap', JSON.stringify(state)); }
     </script>
 </body>
 </html>
