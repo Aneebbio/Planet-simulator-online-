@@ -1,37 +1,20 @@
-// upgrades/skills.js - Updated with Cheap Starter Skills
+// upgrades/skills.js - Combined Evolution & Automation
 const skillTree = {
-    sunMoon: { 
-        name: "Sun & Moon", 
-        desc: "Automates time. Skips 1 day every (16 - Level) seconds.", 
-        baseCost: 25, 
-        max: 15,
-        type: "auto"
-    },
-    stardust: { 
-        name: "Starlight Dust", 
-        desc: "Adds +10 to every Isotope harvest.", 
-        baseCost: 10, 
-        max: 50,
-        type: "passive"
-    },
-    gravity: { 
-        name: "Gravity Pull", 
-        desc: "Reduces cost of other skills by 2% per level.", 
-        baseCost: 100, 
-        max: 20,
-        type: "meta"
-    },
-    coreMining: { 
-        name: "Core Mining", 
-        desc: "Increases Rock tile output by 5.", 
-        baseCost: 150, 
-        max: 25,
-        type: "visual"
-    }
+    // --- CLASSIC EVOLUTION (The "Old" Upgrades) ---
+    tectonics: { name: "Tectonics", desc: "Creates Rock tiles. Increases Isotope harvest.", baseCost: 50, max: 10, type: "phys" },
+    atmosphere: { name: "Atmosphere", desc: "Creates habitable air. Unlocks Water.", baseCost: 200, max: 10, type: "phys" },
+    hydration: { name: "Hydration", desc: "Fills basins with Water.", baseCost: 1000, max: 10, type: "phys" },
+    biosphere: { name: "Biosphere", desc: "Sprouts Flora and life.", baseCost: 5000, max: 10, type: "phys" },
+    civilization: { name: "Civilization", desc: "Builds MegaCities.", baseCost: 20000, max: 10, type: "phys" },
+
+    // --- NEW CHEAP SKILLS ---
+    sunMoon: { name: "Sun & Moon", desc: "Skips 1 day automatically every (16-Lv) secs.", baseCost: 25, max: 15, type: "auto" },
+    stardust: { name: "Starlight Dust", desc: "+10 base Isotope per harvest.", baseCost: 10, max: 50, type: "passive" }
 };
 
 function calculateSkillCost(key, lvl) {
     let s = skillTree[key];
-    // Cheap scaling: 1.4x increase instead of 2.5x
-    return Math.floor(s.baseCost * Math.pow(1.45, lvl));
+    // Different scaling for physical vs cheap skills
+    let multiplier = (s.type === "phys") ? 2.2 : 1.45;
+    return Math.floor(s.baseCost * Math.pow(multiplier, lvl));
 }
