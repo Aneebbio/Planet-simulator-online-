@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Void God: Heavy Edition</title>
+    <title>Void God: Immortal Edition</title>
     <style>
         :root { --primary: #ed1e79; --void: #8a2be2; --bg: #050508; --card: #111420; }
         body { background: var(--bg); color: white; font-family: 'Courier New', monospace; margin: 0; text-align: center; overflow-x: hidden; transition: 2s; }
@@ -26,12 +26,11 @@
         .ghost { background: var(--void) !important; box-shadow: 0 0 15px var(--primary); animation: ghostPulse 1s infinite alternate; cursor: pointer; z-index: 10; }
         @keyframes ghostPulse { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: scale(1.1); } }
 
-        /* Dyson Swarm Visuals */
         .swarm-ring { position: absolute; top: -10px; left: -10px; width: 320px; height: 320px; border: 1px dashed rgba(255,215,0,0.3); border-radius: 50%; animation: spin 10s linear infinite; pointer-events: none; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         .satellite { position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; background: gold; border-radius: 2px; box-shadow: 0 0 10px gold; }
 
-        .day-btn { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--primary); background: #000; color: white; cursor: pointer; position: relative; font-weight: bold; margin-top: 20px; }
+        .day-btn { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--primary); background: #000; color: white; cursor: pointer; position: relative; font-weight: bold; margin-top: 20px; outline: none; }
         #auto-ring { position: absolute; top: -4px; left: -4px; width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--void); clip-path: inset(0 100% 0 0); opacity: 0.6; }
 
         .screen { display: none; padding: 10px; padding-bottom: 100px; }
@@ -52,7 +51,7 @@
 <div id="resource-bar">
     <span>ISO: <b id="iso-display">0</b></span>
     <span style="color:var(--void)">VOID: <b id="void-display">0</b></span>
-    <button id="mute-btn" onclick="toggleAudio()" style="background:none; border:none; display:none; cursor:pointer;">🔈</button>
+    <button id="mute-btn" onclick="toggleAudio()" style="background:none; border:none; display:none; cursor:pointer; font-size:16px;">🔈</button>
     <div id="save-indicator"></div>
 </div>
 
@@ -64,7 +63,7 @@
 </nav>
 
 <section id="screen-world" class="screen active-screen">
-    <h2 id="world-title" onclick="renamePlanet()" style="margin:10px 0 2px 0; cursor:pointer;">NEW WORLD</h2>
+    <h2 id="world-title" onclick="renamePlanet()" style="margin:10px 0 2px 0; cursor:pointer; letter-spacing:1px;">NEW WORLD</h2>
     <div id="status-bar" style="font-size: 10px; color: #555; margin-bottom: 15px;">
         STATUS: <span id="env-desc" style="color:var(--primary)">SCANNING...</span>
     </div>
@@ -109,6 +108,7 @@
     <div class="card" style="background:#000;">
         <button class="buy-btn" style="background:#222; font-size:10px;" onclick="exportSave()">EXPORT SAVE</button>
         <button class="buy-btn" style="background:#222; font-size:10px;" onclick="importSave()">IMPORT SAVE</button>
+        <button class="buy-btn" style="background:#800; font-size:10px; margin-top:10px;" onclick="resetGame()">WIPE ALL DATA</button>
     </div>
 
     <div id="log-list"></div>
@@ -118,9 +118,9 @@
 <div id="message-box"></div>
 
 <script>
-    const SAVE_KEY = "VoidGod_Heavy_V1";
+    const SAVE_KEY = "VoidGod_Final_Safety_V1";
+    let lastClick = 0; // Anti-clicker variable
     
-    // --- DATABASE ---
     const envs = {
         void: { desc: "A silent, dark vacuum.", color: "#8a2be2" },
         fire: { desc: "A world of molten rivers.", color: "#ff4757" },
@@ -145,7 +145,6 @@
         voidMagnet: { name: "Void Magnet", desc: "Auto-collect Ghosts.", cost: 5, max: 1 }
     };
 
-    // --- STATE ---
     let state = {
         iso: 0, void: 0, day: 1, planetName: "NEW WORLD", prestigeCount: 0,
         skills: {}, voidSkills: {}, lastSeen: Date.now(),
@@ -156,16 +155,20 @@
 
     function init() {
         let saved = localStorage.getItem(SAVE_KEY);
-        if(saved) state = Object.assign(state, JSON.parse(saved));
-        // Safety for stats
+        if(saved) {
+            try {
+                let parsed = JSON.parse(saved);
+                state = Object.assign(state, parsed);
+                // Fix Infinity Bug
+                if (state.iso === null || isNaN(state.iso) || state.iso === Infinity) state.iso = 1000000;
+            } catch(e) { console.error("Corrupt save."); }
+        }
         if(!state.stats) state.stats = { totalIso: 0, totalNovas: 0, totalGhosts: 0, totalDays: 0 };
-        
         renderWorld(); ui(); checkAura();
         setInterval(gameLoop, 1000);
         addLog("SYSTEM ONLINE.");
     }
 
-    // --- CORE LOGIC ---
     function gameLoop() {
         let sm = state.skills.sunMoon || 0;
         let ch = state.skills.chronos || 0;
@@ -174,17 +177,21 @@
             let speed = 1 - (ch * 0.08);
             let limit = (16 - sm) * speed;
             document.getElementById('auto-ring').style.clipPath = `inset(0 ${100-(autoTick/limit)*100}% 0 0)`;
-            if(autoTick >= limit) { advance(); autoTick = 0; }
+            if(autoTick >= limit) { advance(true); autoTick = 0; }
         }
     }
 
-    function advance() {
+    function advance(isAuto = false) {
+        let now = Date.now();
+        if (!isAuto && now - lastClick < 60) return; // Rate Limit: 60ms
+        lastClick = now;
+
         state.stats.totalDays++;
         if (Math.random() < (0.001 * (1 + (state.skills.novaStable||0)))) triggerSuperNova();
 
         if(state.day < 20) {
             state.day++;
-            if(Math.random() < 0.05) renderWorld();
+            if(state.day % 5 === 0) renderWorld();
         } else {
             state.day = 1;
             let pwr = Object.values(state.skills).reduce((a,b)=>a+b, 0);
@@ -202,35 +209,28 @@
         state.stats.totalNovas++;
         document.getElementById('nova-overlay').classList.add('flash-anim');
         setTimeout(()=>document.getElementById('nova-overlay').classList.remove('flash-anim'), 800);
-        
-        let bonus = (state.iso * 0.1) + 10000;
+        let bonus = (state.iso * 0.05) + 5000;
         state.iso += bonus; state.stats.totalIso += bonus;
         addLog("✨ SUPER NOVA EVENT!");
-        createParticles();
-        ui();
+        createParticles(); ui();
     }
 
     function createParticles() {
-        for(let i=0; i<20; i++) {
+        for(let i=0; i<15; i++) {
             let p = document.createElement('div');
             p.style.cssText = `position:fixed; left:50%; top:50%; width:4px; height:4px; background:white; border-radius:50%; pointer-events:none; z-index:10000;`;
             document.body.appendChild(p);
-            let a = Math.random()*Math.PI*2, d = Math.random()*200+50;
+            let a = Math.random()*Math.PI*2, d = Math.random()*150+50;
             p.animate([{transform:'translate(0,0)', opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px)`, opacity:0}], 800).onfinish = () => p.remove();
         }
     }
 
-    // --- UI ---
     function renderWorld() {
         const grid = document.getElementById('grid-9x9'); grid.innerHTML = '';
         const swarm = document.getElementById('swarm-visual'); swarm.innerHTML = '';
-        
-        if(state.skills.dyson) {
-            swarm.innerHTML = `<div class="swarm-ring"><div class="satellite"></div></div>`;
-        }
-
+        if(state.skills.dyson) swarm.innerHTML = `<div class="swarm-ring"><div class="satellite"></div></div>`;
         let ghostChance = state.voidSkills.spectralLens ? 0.05 : 0.01;
-        let ghostIdx = (state.prestigeCount > 1 && Math.random() < ghostChance) ? Math.floor(Math.random()*81) : -1;
+        let ghostIdx = (state.prestigeCount > 0 && Math.random() < ghostChance) ? Math.floor(Math.random()*81) : -1;
 
         for(let i=0; i<81; i++) {
             let t = document.createElement('div'); t.className = 'tile';
@@ -239,7 +239,7 @@
                 t.onclick = () => { 
                     let gain = (state.prestigeCount+1)*2000;
                     state.iso += gain; state.stats.totalGhosts++;
-                    addLog(`👻 GHOST CAUGHT: +${gain} ISO`);
+                    addLog(`👻 GHOST: +${gain} ISO`);
                     renderWorld(); ui(); save();
                 };
             } else {
@@ -255,24 +255,23 @@
     }
 
     function ui() {
+        if (state.iso > 1e15) state.iso = 1e15; // Hard Cap to prevent Infinity glitch
         document.getElementById('iso-display').innerText = Math.floor(state.iso).toLocaleString();
         document.getElementById('void-display').innerText = state.void;
         document.getElementById('void-total-display').innerText = state.void;
         document.getElementById('day-counter').innerText = state.day + "/20";
         document.getElementById('pending-tokens').innerText = Math.floor(Math.sqrt(state.iso / 1000000));
         
-        // Planet Flavor
         let name = state.planetName.toLowerCase();
         let env = envs.earth;
         if(name.includes("void")) env = envs.void;
         else if(name.includes("fire") || name.includes("hell")) env = envs.fire;
-        else if(name.includes("ice") || name.includes("cold")) env = envs.ice;
+        else if(name.includes("ice") || name.includes("snow")) env = envs.ice;
 
         document.getElementById('world-title').innerText = state.planetName;
         document.getElementById('world-title').style.color = env.color;
         document.getElementById('env-desc').innerText = env.desc;
         
-        // Stats
         document.getElementById('stat-planet-name').innerText = state.planetName;
         document.getElementById('stat-iso').innerText = Math.floor(state.stats.totalIso).toLocaleString();
         document.getElementById('stat-novas').innerText = state.stats.totalNovas;
@@ -281,6 +280,10 @@
     }
 
     function buy(k) {
+        let now = Date.now();
+        if (now - lastClick < 60) return;
+        lastClick = now;
+
         let lvl = state.skills[k]||0;
         let cost = Math.floor(skillTree[k].baseCost * Math.pow(1.6, lvl));
         if(state.iso >= cost && lvl < skillTree[k].max) {
@@ -292,14 +295,13 @@
     function prestige() {
         let earned = Math.floor(Math.sqrt(state.iso / 1000000));
         if(earned < 1) return alert("Need 1,000,000 ISO!");
-        let newName = prompt("Collapse this universe. What is the name of the next?", state.planetName);
+        let newName = prompt("What is the name of the next universe?", state.planetName);
         state.void += earned; state.prestigeCount++;
         state.iso = 0; state.day = 1; state.skills = {};
         state.planetName = newName ? newName.toUpperCase() : "UNKNOWN";
         save(); location.reload();
     }
 
-    // --- SYSTEM UTILS ---
     function save() {
         state.lastSeen = Date.now();
         localStorage.setItem(SAVE_KEY, JSON.stringify(state));
@@ -313,8 +315,7 @@
     }
 
     function addLog(m) {
-        worldLog.unshift(m); if(worldLog.length > 10) worldLog.pop();
-        if(document.getElementById('screen-log').style.display==='block') toggleLog(); 
+        worldLog.unshift(m); if(worldLog.length > 8) worldLog.pop();
     }
 
     function tab(t) {
@@ -331,8 +332,8 @@
         Object.keys(skillTree).forEach(k=>{
             let s = skillTree[k], lvl = state.skills[k]||0, cost = Math.floor(s.baseCost * Math.pow(1.6, lvl));
             let isMax = lvl >= s.max;
-            list.innerHTML += `<div class="card"><b>${s.name}</b> <small>Lv.${lvl}</small><br><small>${s.desc}</small><br>
-            <button class="buy-btn" onclick="buy('${k}')" ${isMax||state.iso<cost?'disabled':''}>${isMax?'MAXED':cost.toLocaleString()}</button></div>`;
+            list.innerHTML += `<div class="card"><b>${s.name}</b> <small>Lv.${lvl}</small><br><small style="color:#777">${s.desc}</small><br>
+            <button class="buy-btn" onclick="buy('${k}')" ${isMax||state.iso<cost?'disabled':''}>${isMax?'MAXED':cost.toLocaleString() + ' ISO'}</button></div>`;
         });
     }
 
@@ -345,7 +346,7 @@
     }
 
     function buyVoid(k) {
-        let lvl = state.voidSkills[k]||0, cost = voidTree[k].cost + (lvl*voidTree[k].cost);
+        let lvl = state.voidSkills[k]||0, cost = v.cost + (lvl*v.cost);
         if(state.void >= cost) { state.void -= cost; state.voidSkills[k] = lvl+1; renderVoidShop(); ui(); save(); checkAura(); }
     }
 
@@ -354,6 +355,8 @@
         l.style.display = l.style.display === 'block' ? 'none' : 'block';
         document.getElementById('log-list').innerHTML = worldLog.map(m=>`<div style="font-size:10px; padding:5px; border-bottom:1px solid #222;">> ${m}</div>`).join('');
     }
+
+    function resetGame() { if(confirm("DELETE ALL PROGRESS?")) { localStorage.removeItem(SAVE_KEY); location.reload(); } }
 
     function checkAura() {
         if(state.voidSkills.spectralLens || state.voidSkills.voidMagnet) {
@@ -380,8 +383,8 @@
         osc2.frequency.setTargetAtTime(f+0.5, audioCtx.currentTime, 0.1);
     }
 
-    function exportSave() { navigator.clipboard.writeText(btoa(JSON.stringify(state))); alert("Copied!"); }
-    function importSave() { let s = prompt("Paste Save:"); if(s) { state = JSON.parse(atob(s)); save(); location.reload(); } }
+    function exportSave() { navigator.clipboard.writeText(btoa(JSON.stringify(state))); alert("Save Code Copied!"); }
+    function importSave() { let s = prompt("Paste Save Code:"); if(s) { try{ state = JSON.parse(atob(s)); save(); location.reload(); }catch(e){alert("Invalid!");}} }
 </script>
 </body>
 </html>
