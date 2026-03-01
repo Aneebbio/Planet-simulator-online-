@@ -1,390 +1,160 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Void God: Immortal Edition</title>
-    <style>
-        :root { --primary: #ed1e79; --void: #8a2be2; --bg: #050508; --card: #111420; }
-        body { background: var(--bg); color: white; font-family: 'Courier New', monospace; margin: 0; text-align: center; overflow-x: hidden; transition: 2s; }
-        .void-aura { box-shadow: inset 0 0 80px rgba(138, 43, 226, 0.6); animation: auraPulse 4s infinite alternate; }
-        @keyframes auraPulse { 0% { box-shadow: inset 0 0 30px rgba(138, 43, 226, 0.3); } 100% { box-shadow: inset 0 0 100px rgba(138, 43, 226, 0.7); } }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>VOID GOD \u2014 IMMORTAL EDITION</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;600;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root {
+  --c0: #02010a;
+  --c1: #0c0a1e;
+  --c2: #181430;
+  --c3: #251e4a;
+  --acc: #c084fc;
+  --acc2: #818cf8;
+  --gold: #fbbf24;
+  --cyan: #22d3ee;
+  --red: #f43f5e;
+  --green: #4ade80;
+  --txt: #e2e8f0;
+  --txt2: #94a3b8;
+  --txt3: #475569;
+  --glow: rgba(192,132,252,0.4);
+  --glow2: rgba(34,211,238,0.3);
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--c0);color:var(--txt);
+  font-family:'Share Tech Mono',monospace;
+  min-height:100vh;overflow-x:hidden;
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(129,140,248,0.12) 0%, transparent 70%),
+    radial-gradient(ellipse 50% 50% at 80% 100%, rgba(192,132,252,0.07) 0%, transparent 60%);
+}
 
-        #resource-bar { background: #000; padding: 12px; display: flex; justify-content: space-around; border-bottom: 2px solid var(--primary); position: sticky; top: 0; z-index: 1000; }
-        #save-indicator { width: 8px; height: 8px; border-radius: 50%; align-self: center; transition: 0.3s; background: transparent; }
-        .save-pulse { background: #2ed573 !important; box-shadow: 0 0 10px #2ed573; }
-        
-        #main-nav { display: flex; justify-content: space-around; background: #111; padding: 10px; border-bottom: 1px solid #333; }
-        #main-nav button { background: none; border: none; color: #666; font-weight: bold; cursor: pointer; font-size: 11px; text-transform: uppercase; }
-        #main-nav button.active-nav { color: var(--primary); border-bottom: 2px solid var(--primary); }
+/* NOISE OVERLAY */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:1;opacity:0.35;
+}
 
-        #world-container { position: relative; width: 320px; margin: 20px auto; }
-        #grid-9x9 { display: grid; grid-template-columns: repeat(9, 1fr); gap: 1px; width: 300px; height: 300px; background: #222; border: 3px solid #333; margin: 0 auto; position: relative; z-index: 2; }
-        .tile { background: #111; width: 100%; height: 100%; transition: 0.3s; }
-        .s1 { background: #555; } .s2 { background: #8b4513; } .s3 { background: #1e90ff; }
-        .s4 { background: #2ed573; } .s5 { background: #ffa502; box-shadow: inset 0 0 5px #000; }
-        .ghost { background: var(--void) !important; box-shadow: 0 0 15px var(--primary); animation: ghostPulse 1s infinite alternate; cursor: pointer; z-index: 10; }
-        @keyframes ghostPulse { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: scale(1.1); } }
+/* \u2500\u2500 HEADER \u2500\u2500 */
+#hdr{
+  position:sticky;top:0;z-index:500;
+  background:rgba(2,1,10,0.85);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(192,132,252,0.2);
+  padding:0 16px;height:52px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+#hdr-title{
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:11px;
+  letter-spacing:3px;color:var(--acc);
+  text-shadow:0 0 20px var(--acc);
+}
+#res-row{display:flex;gap:16px;align-items:center;}
+.res{display:flex;align-items:center;gap:6px;font-size:11px;}
+.res-icon{width:8px;height:8px;border-radius:50%;}
+.ri-iso{background:var(--cyan);box-shadow:0 0 8px var(--cyan);}
+.ri-void{background:var(--acc);box-shadow:0 0 8px var(--acc);}
+.res-val{color:var(--txt);font-weight:bold;}
+#ips-display{font-size:9px;color:var(--txt3);}
+#save-dot{width:6px;height:6px;border-radius:50%;background:var(--txt3);transition:0.3s;}
+#save-dot.pulse{background:var(--green);box-shadow:0 0 8px var(--green);}
 
-        .swarm-ring { position: absolute; top: -10px; left: -10px; width: 320px; height: 320px; border: 1px dashed rgba(255,215,0,0.3); border-radius: 50%; animation: spin 10s linear infinite; pointer-events: none; }
-        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-        .satellite { position: absolute; top: -5px; left: 50%; width: 8px; height: 8px; background: gold; border-radius: 2px; box-shadow: 0 0 10px gold; }
+/* \u2500\u2500 NAV \u2500\u2500 */
+#nav{
+  display:flex;background:rgba(12,10,30,0.9);
+  border-bottom:1px solid rgba(255,255,255,0.06);
+  position:sticky;top:52px;z-index:499;
+}
+.ntab{
+  flex:1;padding:10px 4px;font-size:10px;letter-spacing:1.5px;
+  color:var(--txt3);background:none;border:none;cursor:pointer;
+  font-family:'Share Tech Mono',monospace;text-transform:uppercase;
+  border-bottom:2px solid transparent;transition:0.2s;
+}
+.ntab:hover{color:var(--txt2);}
+.ntab.on{color:var(--acc);border-bottom-color:var(--acc);text-shadow:0 0 12px var(--acc);}
+.ntab .ntab-icon{font-size:14px;display:block;margin-bottom:2px;}
 
-        .day-btn { width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--primary); background: #000; color: white; cursor: pointer; position: relative; font-weight: bold; margin-top: 20px; outline: none; }
-        #auto-ring { position: absolute; top: -4px; left: -4px; width: 100px; height: 100px; border-radius: 50%; border: 4px solid var(--void); clip-path: inset(0 100% 0 0); opacity: 0.6; }
+/* \u2500\u2500 SCREENS \u2500\u2500 */
+.screen{display:none;padding:16px;padding-bottom:120px;animation:fadeUp 0.25s ease;}
+.screen.on{display:block;}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
 
-        .screen { display: none; padding: 10px; padding-bottom: 100px; }
-        .active-screen { display: block; }
-        .card { background: var(--card); border: 1px solid #222; padding: 12px; margin: 8px auto; width: 90%; max-width: 400px; border-radius: 8px; text-align: left; }
-        .buy-btn { background: var(--primary); border: none; color: white; padding: 10px; border-radius: 5px; cursor: pointer; width: 100%; font-weight: bold; margin-top: 5px; }
-        .buy-btn:disabled { opacity: 0.1; cursor: default; }
+/* \u2500\u2500 WORLD SCREEN \u2500\u2500 */
+#planet-name{
+  font-family:'Orbitron',sans-serif;font-weight:900;font-size:22px;
+  letter-spacing:4px;text-align:center;
+  cursor:pointer;margin-bottom:4px;transition:0.3s;
+}
+#env-line{text-align:center;font-size:9px;color:var(--txt3);letter-spacing:2px;margin-bottom:20px;}
 
-        #nova-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background:white; pointer-events:none; opacity:0; z-index:9999; }
-        .flash-anim { animation: novaFlash 0.8s ease-out; }
-        @keyframes novaFlash { 0% { opacity: 1; } 100% { opacity: 0; } }
-    </style>
-</head>
-<body onload="init()">
+/* PLANET VISUAL */
+#planet-wrap{
+  position:relative;width:200px;height:200px;margin:0 auto 24px;
+}
+#planet-svg{width:200px;height:200px;border-radius:50%;overflow:hidden;position:relative;z-index:2;}
+#planet-glow{
+  position:absolute;inset:-20px;border-radius:50%;z-index:1;
+  background:radial-gradient(circle, transparent 35%, rgba(192,132,252,0.15) 60%, transparent 80%);
+  animation:glowPulse 3s ease-in-out infinite alternate;
+}
+@keyframes glowPulse{from{opacity:0.6;}to{opacity:1;}}
+.orbit-ring{
+  position:absolute;border-radius:50%;border:1px dashed;
+  animation:spinOrbit linear infinite;pointer-events:none;
+}
+.sat-dot{
+  position:absolute;top:50%;left:50%;width:6px;height:6px;
+  border-radius:50%;transform-origin:center center;
+}
+@keyframes spinOrbit{from{transform:rotate(0deg);}to{transform:rotate(360deg);}}
 
-<div id="nova-overlay"></div>
+/* GRID */
+#grid-wrap{
+  position:relative;width:288px;margin:0 auto;
+}
+#grid{
+  display:grid;grid-template-columns:repeat(9,1fr);
+  gap:2px;width:288px;padding:4px;
+  background:rgba(255,255,255,0.02);
+  border:1px solid rgba(192,132,252,0.15);
+  border-radius:8px;
+}
+.tile{
+  width:29px;height:29px;border-radius:3px;
+  background:rgba(255,255,255,0.02);transition:0.3s;
+  position:relative;
+}
+.tile-void{background:rgba(138,43,226,0.12);}
+.tile-rock{background:linear-gradient(135deg,#3d3550,#2a1f40);}
+.tile-fire{background:linear-gradient(135deg,#7c1d1d,#c2410c);}
+.tile-ocean{background:linear-gradient(135deg,#1e3a5f,#1d4ed8);}
+.tile-grass{background:linear-gradient(135deg,#14532d,#166534);}
+.tile-city{
+  background:linear-gradient(135deg,#1e1b4b,#312e81);
+  box-shadow:inset 0 0 4px rgba(192,132,252,0.3);
+}
+.tile-city::after{
+  content:'';position:absolute;bottom:2px;left:2px;right:2px;height:1px;
+  background:linear-gradient(90deg,transparent,var(--acc),transparent);
+  opacity:0.5;animation:cityGlow 2s ease infinite alternate;
+}
+@keyframes cityGlow{from{opacity:0.2;}to{opacity:0.7;}}
+.tile-ghost{
+  background:radial-gradient(circle,rgba(192,132,252,0.6),rgba(192,132,252,0.1)) !important;
+  cursor:pointer;z-index:10;animation:ghostBeat 0.8s ease-in-out infinite alternate;
+}
+@keyframes ghostBeat{from{box-shadow:0 0 6px var(--acc);transform:scale(0.85);}to{box-shadow:0 0 16px var(--acc),0 0 30px rgba(192,132,252,0.4);transform:scale(1.1);}}
 
-<div id="resource-bar">
-    <span>ISO: <b id="iso-display">0</b></span>
-    <span style="color:var(--void)">VOID: <b id="void-display">0</b></span>
-    <button id="mute-btn" onclick="toggleAudio()" style="background:none; border:none; display:none; cursor:pointer; font-size:16px;">🔈</button>
-    <div id="save-indicator"></div>
-</div>
-
-<nav id="main-nav">
-    <button id="nav-world" class="active-nav" onclick="tab('world')">Orbit</button>
-    <button id="nav-skills" onclick="tab('skills')">Evolution</button>
-    <button id="nav-log" onclick="toggleLog()">Data</button>
-    <button id="nav-void" onclick="tab('void')">Void</button>
-</nav>
-
-<section id="screen-world" class="screen active-screen">
-    <h2 id="world-title" onclick="renamePlanet()" style="margin:10px 0 2px 0; cursor:pointer; letter-spacing:1px;">NEW WORLD</h2>
-    <div id="status-bar" style="font-size: 10px; color: #555; margin-bottom: 15px;">
-        STATUS: <span id="env-desc" style="color:var(--primary)">SCANNING...</span>
-    </div>
-    
-    <div id="world-container">
-        <div id="swarm-visual"></div>
-        <div id="grid-9x9"></div>
-    </div>
-
-    <button class="day-btn" onclick="advance()">
-        <div id="auto-ring"></div>
-        DAY <span id="day-counter">1/20</span>
-    </button>
-</section>
-
-<section id="screen-skills" class="screen"><div id="skill-list"></div></section>
-
-<section id="screen-void" class="screen">
-    <div class="card" style="border-color:var(--void); text-align:center;">
-        <p>Current: <b id="void-total-display">0</b> | Pending: <b id="pending-tokens">0</b></p>
-        <button class="buy-btn" style="background:var(--void)" onclick="prestige()">BIG CRUNCH</button>
-    </div>
-    <div id="void-upgrade-list"></div>
-</section>
-
-<section id="screen-log">
-    <div class="card" style="border: 1px solid var(--primary);">
-        <h4 style="margin:0 0 5px 0; font-size:12px;">COSMIC RECORDS: <span id="stat-planet-name">...</span></h4>
-        <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 10px;">
-            <span>Lifetime ISO:</span> <b id="stat-iso">0</b>
-            <span>Super Novas:</span> <b id="stat-novas">0</b>
-            <span>Ghosts Caught:</span> <b id="stat-ghosts">0</b>
-            <span>Total Days:</span> <b id="stat-days">0</b>
-        </div>
-    </div>
-
-    <div id="void-controls" style="display:none; padding:10px; background:#111; margin:10px auto; width:85%; border-radius:8px;">
-        <label style="font-size:10px">AMBIENCE</label> <input type="range" id="vol-slider" min="0" max="0.1" step="0.01" value="0.03" oninput="updateAudio()">
-        <br><label style="font-size:10px">PITCH</label> <input type="range" id="pitch-slider" min="40" max="80" step="1" value="55" oninput="updateAudio()">
-    </div>
-    
-    <div class="card" style="background:#000;">
-        <button class="buy-btn" style="background:#222; font-size:10px;" onclick="exportSave()">EXPORT SAVE</button>
-        <button class="buy-btn" style="background:#222; font-size:10px;" onclick="importSave()">IMPORT SAVE</button>
-        <button class="buy-btn" style="background:#800; font-size:10px; margin-top:10px;" onclick="resetGame()">WIPE ALL DATA</button>
-    </div>
-
-    <div id="log-list"></div>
-    <button class="buy-btn" style="width:120px; margin: 20px auto; display:block;" onclick="toggleLog()">RETURN</button>
-</section>
-
-<div id="message-box"></div>
-
-<script>
-    const SAVE_KEY = "VoidGod_Final_Safety_V1";
-    let lastClick = 0; // Anti-clicker variable
-    
-    const envs = {
-        void: { desc: "A silent, dark vacuum.", color: "#8a2be2" },
-        fire: { desc: "A world of molten rivers.", color: "#ff4757" },
-        ice: { desc: "A frozen, crystalline wasteland.", color: "#70a1ff" },
-        earth: { desc: "A lush, blue-green cradle.", color: "#2ed573" }
-    };
-
-    const skillTree = {
-        tectonics: { name: "Tectonics", desc: "Hardens the crust.", baseCost: 50, max: 25 },
-        atmosphere: { name: "Atmosphere", desc: "Develops air.", baseCost: 200, max: 20 },
-        hydration: { name: "Hydration", desc: "Fills the oceans.", baseCost: 1000, max: 20 },
-        biosphere: { name: "Biosphere", desc: "Spreads forests.", baseCost: 5000, max: 20 },
-        civilization: { name: "Civilization", desc: "Builds MegaCities.", baseCost: 25000, max: 15 },
-        sunMoon: { name: "Sun & Moon", desc: "Auto-advance days.", baseCost: 50, max: 15 },
-        chronos: { name: "Chronos", desc: "Speed up time.", baseCost: 5000, max: 10 },
-        dyson: { name: "Dyson Swarm", desc: "Satellites +50% Yield.", baseCost: 150000, max: 1 },
-        novaStable: { name: "Nova Stability", desc: "Double Nova chance.", baseCost: 80000, max: 5 }
-    };
-
-    const voidTree = {
-        spectralLens: { name: "Spectral Lens", desc: "High Ghost rate.", cost: 2, max: 1 },
-        voidMagnet: { name: "Void Magnet", desc: "Auto-collect Ghosts.", cost: 5, max: 1 }
-    };
-
-    let state = {
-        iso: 0, void: 0, day: 1, planetName: "NEW WORLD", prestigeCount: 0,
-        skills: {}, voidSkills: {}, lastSeen: Date.now(),
-        stats: { totalIso: 0, totalNovas: 0, totalGhosts: 0, totalDays: 0 }
-    };
-
-    let autoTick = 0, worldLog = [], audioCtx = null, osc1, osc2, gainN;
-
-    function init() {
-        let saved = localStorage.getItem(SAVE_KEY);
-        if(saved) {
-            try {
-                let parsed = JSON.parse(saved);
-                state = Object.assign(state, parsed);
-                // Fix Infinity Bug
-                if (state.iso === null || isNaN(state.iso) || state.iso === Infinity) state.iso = 1000000;
-            } catch(e) { console.error("Corrupt save."); }
-        }
-        if(!state.stats) state.stats = { totalIso: 0, totalNovas: 0, totalGhosts: 0, totalDays: 0 };
-        renderWorld(); ui(); checkAura();
-        setInterval(gameLoop, 1000);
-        addLog("SYSTEM ONLINE.");
-    }
-
-    function gameLoop() {
-        let sm = state.skills.sunMoon || 0;
-        let ch = state.skills.chronos || 0;
-        if(sm > 0) {
-            autoTick++;
-            let speed = 1 - (ch * 0.08);
-            let limit = (16 - sm) * speed;
-            document.getElementById('auto-ring').style.clipPath = `inset(0 ${100-(autoTick/limit)*100}% 0 0)`;
-            if(autoTick >= limit) { advance(true); autoTick = 0; }
-        }
-    }
-
-    function advance(isAuto = false) {
-        let now = Date.now();
-        if (!isAuto && now - lastClick < 60) return; // Rate Limit: 60ms
-        lastClick = now;
-
-        state.stats.totalDays++;
-        if (Math.random() < (0.001 * (1 + (state.skills.novaStable||0)))) triggerSuperNova();
-
-        if(state.day < 20) {
-            state.day++;
-            if(state.day % 5 === 0) renderWorld();
-        } else {
-            state.day = 1;
-            let pwr = Object.values(state.skills).reduce((a,b)=>a+b, 0);
-            let harvest = (100 + (pwr * 50)) * (state.skills.dyson ? 1.5 : 1);
-            state.iso += harvest;
-            state.stats.totalIso += harvest;
-            renderWorld();
-            addLog("HARVEST COMPLETE.");
-        }
-        if(state.voidSkills.voidMagnet) { let g = document.querySelector('.ghost'); if(g) g.click(); }
-        ui(); save();
-    }
-
-    function triggerSuperNova() {
-        state.stats.totalNovas++;
-        document.getElementById('nova-overlay').classList.add('flash-anim');
-        setTimeout(()=>document.getElementById('nova-overlay').classList.remove('flash-anim'), 800);
-        let bonus = (state.iso * 0.05) + 5000;
-        state.iso += bonus; state.stats.totalIso += bonus;
-        addLog("✨ SUPER NOVA EVENT!");
-        createParticles(); ui();
-    }
-
-    function createParticles() {
-        for(let i=0; i<15; i++) {
-            let p = document.createElement('div');
-            p.style.cssText = `position:fixed; left:50%; top:50%; width:4px; height:4px; background:white; border-radius:50%; pointer-events:none; z-index:10000;`;
-            document.body.appendChild(p);
-            let a = Math.random()*Math.PI*2, d = Math.random()*150+50;
-            p.animate([{transform:'translate(0,0)', opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px)`, opacity:0}], 800).onfinish = () => p.remove();
-        }
-    }
-
-    function renderWorld() {
-        const grid = document.getElementById('grid-9x9'); grid.innerHTML = '';
-        const swarm = document.getElementById('swarm-visual'); swarm.innerHTML = '';
-        if(state.skills.dyson) swarm.innerHTML = `<div class="swarm-ring"><div class="satellite"></div></div>`;
-        let ghostChance = state.voidSkills.spectralLens ? 0.05 : 0.01;
-        let ghostIdx = (state.prestigeCount > 0 && Math.random() < ghostChance) ? Math.floor(Math.random()*81) : -1;
-
-        for(let i=0; i<81; i++) {
-            let t = document.createElement('div'); t.className = 'tile';
-            if(i === ghostIdx) {
-                t.className = 'tile ghost';
-                t.onclick = () => { 
-                    let gain = (state.prestigeCount+1)*2000;
-                    state.iso += gain; state.stats.totalGhosts++;
-                    addLog(`👻 GHOST: +${gain} ISO`);
-                    renderWorld(); ui(); save();
-                };
-            } else {
-                let s = state.skills;
-                if(i < (s.civilization||0)*8) t.classList.add('s5');
-                else if(i < (s.biosphere||0)*12) t.classList.add('s4');
-                else if(i < (s.hydration||0)*16) t.classList.add('s3');
-                else if(i < (s.atmosphere||0)*20) t.classList.add('s2');
-                else if(i < (s.tectonics||0)*25) t.classList.add('s1');
-            }
-            grid.appendChild(t);
-        }
-    }
-
-    function ui() {
-        if (state.iso > 1e15) state.iso = 1e15; // Hard Cap to prevent Infinity glitch
-        document.getElementById('iso-display').innerText = Math.floor(state.iso).toLocaleString();
-        document.getElementById('void-display').innerText = state.void;
-        document.getElementById('void-total-display').innerText = state.void;
-        document.getElementById('day-counter').innerText = state.day + "/20";
-        document.getElementById('pending-tokens').innerText = Math.floor(Math.sqrt(state.iso / 1000000));
-        
-        let name = state.planetName.toLowerCase();
-        let env = envs.earth;
-        if(name.includes("void")) env = envs.void;
-        else if(name.includes("fire") || name.includes("hell")) env = envs.fire;
-        else if(name.includes("ice") || name.includes("snow")) env = envs.ice;
-
-        document.getElementById('world-title').innerText = state.planetName;
-        document.getElementById('world-title').style.color = env.color;
-        document.getElementById('env-desc').innerText = env.desc;
-        
-        document.getElementById('stat-planet-name').innerText = state.planetName;
-        document.getElementById('stat-iso').innerText = Math.floor(state.stats.totalIso).toLocaleString();
-        document.getElementById('stat-novas').innerText = state.stats.totalNovas;
-        document.getElementById('stat-ghosts').innerText = state.stats.totalGhosts;
-        document.getElementById('stat-days').innerText = state.stats.totalDays;
-    }
-
-    function buy(k) {
-        let now = Date.now();
-        if (now - lastClick < 60) return;
-        lastClick = now;
-
-        let lvl = state.skills[k]||0;
-        let cost = Math.floor(skillTree[k].baseCost * Math.pow(1.6, lvl));
-        if(state.iso >= cost && lvl < skillTree[k].max) {
-            state.iso -= cost; state.skills[k] = lvl + 1;
-            renderSkills(); renderWorld(); ui(); save();
-        }
-    }
-
-    function prestige() {
-        let earned = Math.floor(Math.sqrt(state.iso / 1000000));
-        if(earned < 1) return alert("Need 1,000,000 ISO!");
-        let newName = prompt("What is the name of the next universe?", state.planetName);
-        state.void += earned; state.prestigeCount++;
-        state.iso = 0; state.day = 1; state.skills = {};
-        state.planetName = newName ? newName.toUpperCase() : "UNKNOWN";
-        save(); location.reload();
-    }
-
-    function save() {
-        state.lastSeen = Date.now();
-        localStorage.setItem(SAVE_KEY, JSON.stringify(state));
-        document.getElementById('save-indicator').classList.add('save-pulse');
-        setTimeout(()=>document.getElementById('save-indicator').classList.remove('save-pulse'), 500);
-    }
-
-    function renamePlanet() {
-        let n = prompt("Rename Reality:", state.planetName);
-        if(n) { state.planetName = n.toUpperCase(); ui(); save(); }
-    }
-
-    function addLog(m) {
-        worldLog.unshift(m); if(worldLog.length > 8) worldLog.pop();
-    }
-
-    function tab(t) {
-        document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active-screen'));
-        document.querySelectorAll('#main-nav button').forEach(b=>b.classList.remove('active-nav'));
-        document.getElementById('screen-'+t).classList.add('active-screen');
-        document.getElementById('nav-'+t).classList.add('active-nav');
-        if(t==='skills') renderSkills();
-        if(t==='void') renderVoidShop();
-    }
-
-    function renderSkills() {
-        const list = document.getElementById('skill-list'); list.innerHTML = '';
-        Object.keys(skillTree).forEach(k=>{
-            let s = skillTree[k], lvl = state.skills[k]||0, cost = Math.floor(s.baseCost * Math.pow(1.6, lvl));
-            let isMax = lvl >= s.max;
-            list.innerHTML += `<div class="card"><b>${s.name}</b> <small>Lv.${lvl}</small><br><small style="color:#777">${s.desc}</small><br>
-            <button class="buy-btn" onclick="buy('${k}')" ${isMax||state.iso<cost?'disabled':''}>${isMax?'MAXED':cost.toLocaleString() + ' ISO'}</button></div>`;
-        });
-    }
-
-    function renderVoidShop() {
-        const list = document.getElementById('void-upgrade-list'); list.innerHTML = '';
-        Object.keys(voidTree).forEach(k=>{
-            let v = voidTree[k], lvl = state.voidSkills[k]||0, cost = v.cost + (lvl*v.cost);
-            list.innerHTML += `<div class="card" style="border-color:var(--void)"><b>${v.name}</b><br><button class="buy-btn" style="background:var(--void)" onclick="buyVoid('${k}')" ${state.void<cost?'disabled':''}>${cost} VOID</button></div>`;
-        });
-    }
-
-    function buyVoid(k) {
-        let lvl = state.voidSkills[k]||0, cost = v.cost + (lvl*v.cost);
-        if(state.void >= cost) { state.void -= cost; state.voidSkills[k] = lvl+1; renderVoidShop(); ui(); save(); checkAura(); }
-    }
-
-    function toggleLog() {
-        const l = document.getElementById('screen-log');
-        l.style.display = l.style.display === 'block' ? 'none' : 'block';
-        document.getElementById('log-list').innerHTML = worldLog.map(m=>`<div style="font-size:10px; padding:5px; border-bottom:1px solid #222;">> ${m}</div>`).join('');
-    }
-
-    function resetGame() { if(confirm("DELETE ALL PROGRESS?")) { localStorage.removeItem(SAVE_KEY); location.reload(); } }
-
-    function checkAura() {
-        if(state.voidSkills.spectralLens || state.voidSkills.voidMagnet) {
-            document.body.classList.add('void-aura');
-            document.getElementById('mute-btn').style.display = 'inline';
-            document.getElementById('void-controls').style.display = 'block';
-        }
-    }
-
-    function toggleAudio() {
-        if(!audioCtx) {
-            audioCtx = new AudioContext(); gainN = audioCtx.createGain(); gainN.gain.value = 0.03; gainN.connect(audioCtx.destination);
-            osc1 = audioCtx.createOscillator(); osc2 = audioCtx.createOscillator();
-            osc1.connect(gainN); osc2.connect(gainN); osc1.start(); osc2.start(); updateAudio();
-            document.getElementById('mute-btn').innerText = "🔊";
-        } else { audioCtx.close(); audioCtx = null; document.getElementById('mute-btn').innerText = "🔈"; }
-    }
-
-    function updateAudio() {
-        if(!audioCtx) return;
-        let f = parseFloat(document.getElementById('pitch-slider').value);
-        gainN.gain.setTargetAtTime(document.getElementById('vol-slider').value, audioCtx.currentTime, 0.1);
-        osc1.frequency.setTargetAtTime(f, audioCtx.currentTime, 0.1);
-        osc2.frequency.setTargetAtTime(f+0.5, audioCtx.currentTime, 0.1);
-    }
-
-    function exportSave() { navigator.clipboard.writeText(btoa(JSON.stringify(state))); alert("Save Code Copied!"); }
-    function importSave() { let s = prompt("Paste Save Code:"); if(s) { try{ state = JSON.parse(atob(s)); save(); location.reload(); }catch(e){alert("Invalid!");}} }
-</script>
-</body>
-</html>
+/* DAY BUTTON */
+#day-btn-wrap{text-align:center;margin-top:20px;}
+#day-btn{
+  width:110px;height:110px;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, #1e1640, #0c0a1e);
+  border:2px solid rgba(192,132,252,0.5);
+  color:var(--txt);cursor:pointer;position:relative;
+  font-family:'Orbitron
